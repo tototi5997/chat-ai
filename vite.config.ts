@@ -4,7 +4,16 @@ import svgr from "vite-plugin-svgr";
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), svgr({ include: "src/icons/svg/*.svg" })],
+  plugins: [
+    react(),
+    svgr({
+      include: "**/*.svg",
+      exclude: "**/*.svg?url",
+      svgrOptions: {
+        exportType: "default",
+      },
+    }),
+  ],
   resolve: {
     alias: {
       "@": "/src",
