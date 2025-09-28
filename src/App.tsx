@@ -1,4 +1,5 @@
-import { Button, Heading, Stack, Container, Text, Box } from "@chakra-ui/react";
+import { Button, Heading, Stack, Container, Text, Box, Icon } from "@chakra-ui/react";
+import ReactIcon from "@/icons/react.svg";
 
 function App() {
   return (
@@ -7,6 +8,7 @@ function App() {
         <Heading as="h1" size="2xl" color="blue.600">
           Chakra UI + React
         </Heading>
+        <Icon as={ReactIcon} boxSize={24} color="blue.500" />
         <Text fontSize="lg" color="gray.600">
           欢迎使用 Chakra UI 组件库
         </Text>

@@ -1,7 +1,6 @@
-declare module "*.svg" {
-  const src: string;
-  export default src;
+/// <reference types="vite-plugin-svgr/client" />
 
-  // 👇 这里加上 SVGR 的 React 组件类型声明
-  export const ReactComponent: React.FC<React.SVGProps<SVGSVGElement>>;
+declare module "*.svg" {
+  const content: React.FC<React.SVGProps<SVGElement>>;
+  export default content;
 }
