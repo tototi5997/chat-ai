@@ -1,71 +1,27 @@
-import { Center, VStack, Text, Image, Box } from "@chakra-ui/react";
-import ellipseGlow from "../assets/ellipse.svg";
+import { Box, Center, Image, Text, VStack } from "@chakra-ui/react";
+import Ellipse from "@/assets/ellipse.png";
+
+const WelcomeBanner = () => {
+  return (
+    <VStack gap={4} align="center" textAlign="center">
+      <Box position="relative" w="60px" h="60px">
+        <Image src={Ellipse} alt="" w="full" h="full" />
+      </Box>
+      <VStack gap={2} align="center">
+        <Text textStyle="h3">Chat AI</Text>
+        <Text textStyle="h7" maxW="480px">
+          我可以帮你分析目标地址的资金情况，你可以简单描述你的追踪需求，例如目标地址、目标链、追踪Token与追踪时间范围等。
+        </Text>
+      </VStack>
+    </VStack>
+  );
+};
 
 export function ChatAI() {
   return (
-    <Box
-      position="relative"
-      rounded="2xl"
-      overflow="hidden"
-      w="full"
-      h="full"
-      borderWidth="1px"
-      borderColor="rgba(253, 252, 251, 0.08)"
-      bgGradient="linear(180deg, rgba(37, 33, 33, 0.78) 0%, rgba(25, 20, 20, 0.9) 55%, rgba(103, 58, 35, 0.35) 100%)"
-      backdropFilter="blur(18px)"
-      boxShadow="0px 40px 120px rgba(0, 0, 0, 0.45)"
-      _before={{
-        content: '""',
-        position: "absolute",
-        inset: "-40%",
-        bgGradient:
-          "radial(at 50% 100%, rgba(201, 124, 63, 0.35), transparent 65%)",
-        filter: "blur(60px)",
-      }}
-    >
-      <Center
-        position="absolute"
-        inset={0}
-        zIndex={1}
-        p={{ base: 10, md: 16 }}
-      >
-        <VStack gap={4} alignItems="center" w="full" maxW="480px">
-          <Box position="relative" w="60px" h="60px">
-            <Image
-              src={ellipseGlow}
-              alt="Chat AI Logo"
-              w="full"
-              h="full"
-              objectFit="cover"
-              position="absolute"
-              inset="-12.5%"
-            />
-          </Box>
-
-          <VStack gap={2} alignItems="center" w="full" textAlign="center">
-            <Text
-              fontSize="40px"
-              fontWeight="bold"
-              fontFamily="Rajdhani, sans-serif"
-              color="chat.text.primary"
-              lineHeight="normal"
-              w="full"
-            >
-              Chat AI
-            </Text>
-
-            <Text
-              fontSize="sm"
-              fontFamily="'PingFang SC', sans-serif"
-              fontWeight="regular"
-              color="chat.text.secondary"
-              lineHeight="22px"
-              w="full"
-            >
-              我可以帮你分析目标地址的资金情况，你可以简单描述你的追踪需求，例如目标地址、目标链、追踪Token与追踪时间范围等。
-            </Text>
-          </VStack>
-        </VStack>
+    <Box flex={1} mx={3} my={3} border="1px solid" borderColor="#423d3d" borderRadius="8px" bg="rgba(26, 21, 22, 0.6)">
+      <Center w="full" h="full" py={16} px={8}>
+        <WelcomeBanner />
       </Center>
     </Box>
   );
