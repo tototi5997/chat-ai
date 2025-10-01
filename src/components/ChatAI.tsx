@@ -1,5 +1,6 @@
 import { Box, Center, Image, Text, VStack } from "@chakra-ui/react";
 import Ellipse from "@/assets/ellipse.png";
+import { NewChat } from "./newChat";
 
 const WelcomeBanner = () => {
   return (
@@ -17,11 +18,11 @@ const WelcomeBanner = () => {
   );
 };
 
-export function ChatAI() {
+export function ChatAI(props: {isNewChat?: Boolean}) {
   return (
     <Box flex={1} mx={3} my={3} border="1px solid" borderColor="#423d3d" borderRadius="8px" bg="rgba(26, 21, 22, 0.6)">
       <Center w="full" h="full" py={16} px={8}>
-        <WelcomeBanner />
+        {props.isNewChat ? <NewChat /> : <WelcomeBanner />}
       </Center>
     </Box>
   );
