@@ -4,14 +4,16 @@ import IconSetting from "@/assets/icon-setting.png";
 import IconMore from "@/assets/icon-more.png";
 import IconEdit from "@/assets/icon-edit.png";
 import IconDel from "@/assets/icon-del.png";
-import { useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import EditInput from "./EditInput";
 import DelDialog from "./DelDialog";
+import { type newTalkInterface } from '@/types/customInterface'
 interface historyObj {
   id: string;
-  label: string
+  label: string;
+  content?: string;
 }
-const Slider = (props: { onNewChat: () => void; }) => {
+const Slider = (props: { onNewChat: () => void, newQuestion: newTalkInterface|null }) => {
   const [history, setHistory] = useState<historyObj[]>([{id: '1', label: '智能体记录'}, {id: '2', label: '智能体记录2'}])
   const [current, setCurrent] = useState('')
   const [isOpen, setIsOpen] = useState(false)
@@ -19,6 +21,26 @@ const Slider = (props: { onNewChat: () => void; }) => {
   const [delData, setDelData] = useState<historyObj | null>()
   const [inputValue, setInputValue] = useState<string>('')
   const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    if(props.newQuestion) {
+      if(!current) {
+        const newHistory = [props.newQuestion, ...history]
+        setHistory(newHistory)
+        setCurrent(props.newQuestion.id)
+      } else {
+        const newHistory = history.map(e => {
+          if(e.id === props.newQuestion?.id) {
+            return props.newQuestion
+          } else {
+            return e
+          }
+        })
+        setHistory(newHistory)
+      }
+    }
+  }, [props.newQuestion])
+
   // 点击侧边栏选项
   const onTabClick = (type:string) => {
     console.log(type, 'type')

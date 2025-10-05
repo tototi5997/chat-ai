@@ -3,10 +3,12 @@ import IconPaperclip from "@/assets/icon-paperclip.png";
 import IconGlobe from "@/assets/icon-globe.png";
 import IconGlobeSvg from "@/assets/icon-globe.svg";
 import IconArrowUp from "@/assets/icon-arrow-up.png";
-import { useState } from "react";
+import { useState, type ChangeEvent } from "react";
+import { type newTalkInterface } from '@/types/customInterface'
 
-export function NewChat() {
+export function NewChat(props: {onAsking: (talk:newTalkInterface) => void}) {
   const [isDeepThink, setIsDeepThink] = useState<Boolean>(false)
+  const [question, setQuestion] = useState<string>('')
   // 是否开启深度搜索
   const onDeepThink = () => {
     setIsDeepThink(!isDeepThink)
@@ -20,9 +22,20 @@ export function NewChat() {
   const accepted = fileUpload.acceptedFiles // 附件列表
   console.log(accepted, 'accepted')
 
+  // 输入
+  const onQuestion = (e:ChangeEvent) => {
+    const newQues = e.target?.value
+    setQuestion(newQues.trim())
+  }
   // 点击发送
   const onSend = () => {
-
+    if(!question) return
+    const newData = {
+      label: '新对话',
+      content: question,
+      id: `new_talk_${Date.now()}`
+    }
+    props.onAsking(newData)
   }
   return (
     <Box w="80%" textAlign="center">
@@ -30,7 +43,7 @@ export function NewChat() {
         Chat AI
       </Text>
       <Box position="relative">
-        <Textarea minH="120px" p="20px" pb="60px" fontSize="16px" borderRadius="8px" resize="none" placeholder="开始对话..." _placeholder={{color: '#86807B'}} color="#fdfcfb" bgColor="#363131" borderColor="#5E565699" />
+        <Textarea minH="120px" p="20px" pb="60px" fontSize="16px" borderRadius="8px" resize="none" placeholder="开始对话..." _placeholder={{color: '#86807B'}} color="#fdfcfb" bgColor="#363131" borderColor="#5E565699" onChange={onQuestion} />
         <Box w="calc(100% - 35px)" h="60px" borderRadius="8px" position="absolute" bottom="7px" left="15px" zIndex="2" bgColor="#363131">
           <HStack pos="absolute" bottom="15px" left="5px">
             <FileUpload.RootProvider value={fileUpload}>
@@ -60,7 +73,7 @@ export function NewChat() {
             </Flex>
           </HStack>
           <HStack pos="absolute" bottom="15px" right="5px">
-            <Flex w="28px" h="28px" borderRadius="28px" cursor="pointer" backgroundColor="#ffdfdfff" justifyContent="center" alignItems="center" onClick={onSend}>
+            <Flex w="28px" h="28px" borderRadius="28px" cursor={!!question ? "pointer" : "disabled"} backgroundColor="#ffdfdfff" justifyContent="center" alignItems="center" onClick={onSend}>
               <Image src={IconArrowUp} alt="" w="full" h="full" objectFit="contain" />
             </Flex>
           </HStack>
