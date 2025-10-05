@@ -1,4 +1,4 @@
-import { Textarea, Box, Text, FileUpload, Image, HStack, Flex, useFileUpload, chakra } from "@chakra-ui/react";
+import { Textarea, Box, Text, FileUpload, Image, HStack, Flex, useFileUpload, chakra, CloseButton } from "@chakra-ui/react";
 import IconPaperclip from "@/assets/icon-paperclip.png";
 import IconGlobe from "@/assets/icon-globe.png";
 import IconGlobeSvg from "@/assets/icon-globe.svg";
@@ -19,9 +19,7 @@ export function NewChat(props: {onAsking: (talk:newTalkInterface) => void}) {
     // maxFileSize: 3000,
   })
 
-  const accepted = fileUpload.acceptedFiles // 附件列表
-  console.log(accepted, 'accepted')
-
+  let accepted = fileUpload.acceptedFiles // 附件列表
   // 输入
   const onQuestion = (e:ChangeEvent) => {
     const newQues = e.target?.value
@@ -36,12 +34,38 @@ export function NewChat(props: {onAsking: (talk:newTalkInterface) => void}) {
       id: `new_talk_${Date.now()}`
     }
     props.onAsking(newData)
+  } 
+  // 关闭附件
+  const onCloseFile = (file:File) => {
+    fileUpload.deleteFile(file)
+  }
+  // 处理尺寸展示
+  const handleSize = (size:number) => {
+    if(size < 1024 * 1024) {
+      const kb = Number((size / 1024).toFixed(2))
+      return `${kb}KB`
+    } else {
+      const mb = Number((size / 1024 / 1024).toFixed(2))
+      return `${mb}MB`
+    }
   }
   return (
-    <Box w="80%" textAlign="center">
+    <Box w="80%" textAlign="center" overflow="hidden">
       <Text fontSize="48px" fontWeight="bold" fontFamily="'Rajdhani', sans-serif" color="#fdfcfb" mb="30px">
         Chat AI
       </Text>
+      <Flex w="100%" gap="10px" mb="20px" flexWrap="wrap">
+        {
+        accepted.map((e, i) =>
+          <Flex key={i} w="280px" justify="space-between" alignItems="center" border="1px solid #86807B" p="10px" borderRadius="8px" textAlign="left">
+            <Box>
+              <Text>{e.name}</Text>
+              <Text>{handleSize(e.size)}</Text>
+            </Box>
+            <CloseButton color="#fff" _hover={{backgroundColor: 'transparent'}} onClick={() => onCloseFile(e)} />
+          </Flex>
+        )}
+      </Flex>
       <Box position="relative">
         <Textarea minH="120px" p="20px" pb="60px" fontSize="16px" borderRadius="8px" resize="none" placeholder="开始对话..." _placeholder={{color: '#86807B'}} color="#fdfcfb" bgColor="#363131" borderColor="#5E565699" onChange={onQuestion} />
         <Box w="calc(100% - 35px)" h="60px" borderRadius="8px" position="absolute" bottom="7px" left="15px" zIndex="2" bgColor="#363131">
