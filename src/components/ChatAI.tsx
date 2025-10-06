@@ -1,7 +1,7 @@
 import { Box, Center, Image, Text, VStack } from "@chakra-ui/react";
 import Ellipse from "@/assets/ellipse.png";
 import { NewChat } from "./NewChat";
-import { type newTalkInterface } from '@/types/customInterface'
+import { type newTalkInterface } from "@/types/customInterface";
 
 const WelcomeBanner = () => {
   return (
@@ -19,11 +19,11 @@ const WelcomeBanner = () => {
   );
 };
 
-export function ChatAI(props: {isNewChat?: Boolean, onAsking: (talk:newTalkInterface) => void}) {
+export function ChatAI(props: { isNewChat?: boolean; onAsking?: (talk: newTalkInterface) => void }) {
   return (
     <Box flex={1} mx={3} my={3} border="1px solid" borderColor="#423d3d" borderRadius="8px" bg="rgba(26, 21, 22, 0.6)">
       <Center w="full" h="full" py={16} px={8}>
-        {props.isNewChat ? <NewChat onAsking={($event) => props.onAsking($event)} /> : <WelcomeBanner />}
+        {props.isNewChat ? <NewChat onAsking={($event) => props.onAsking?.($event)} /> : <WelcomeBanner />}
       </Center>
     </Box>
   );

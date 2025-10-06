@@ -9,12 +9,10 @@ export function Header() {
           <Box position="relative" w="32px" h="42px">
             <Image src={Ellipse} alt="Chat AI logo" w="full" h="full" objectFit="contain" />
           </Box>
-
           <Text fontSize="24px" fontWeight="bold" fontFamily="'Rajdhani', sans-serif" color="#fdfcfb">
             Chat AI
           </Text>
         </HStack>
-
         <HStack gap={2} align="center">
           <Button variant="surface" h="28px" w="64px">
             注册
