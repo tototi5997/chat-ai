@@ -7,11 +7,12 @@ import IconDel from "@/assets/icon-del.png";
 import { useEffect, useState } from "react";
 import EditInput from "./EditInput";
 import DelDialog from "./DelDialog";
-import { type newTalkInterface } from '@/types/customInterface'
+import { type newTalkInterface, type contentInterface } from '@/types/customInterface'
+import { useQueryClient } from '@tanstack/react-query';
 interface historyObj {
   id: string;
   label: string;
-  content?: string;
+  content?: contentInterface;
 }
 const Slider = (props: { onNewChat: () => void, newQuestion: newTalkInterface|null }) => {
   const [history, setHistory] = useState<historyObj[]>([{id: '1', label: '智能体记录'}, {id: '2', label: '智能体记录2'}])
@@ -21,17 +22,26 @@ const Slider = (props: { onNewChat: () => void, newQuestion: newTalkInterface|nu
   const [delData, setDelData] = useState<historyObj | null>()
   const [inputValue, setInputValue] = useState<string>('')
   const [visible, setVisible] = useState(false)
+  const queryClient = useQueryClient();
 
   useEffect(() => {
+    console.log(props.newQuestion, current, 'props.newQuestion')
     if(props.newQuestion) {
       if(!current) {
-        const newHistory = [props.newQuestion, ...history]
+        const newHistory:any = [props.newQuestion, ...history]
         setHistory(newHistory)
         setCurrent(props.newQuestion.id)
+        queryClient.setQueryData(['currentHistory'], props.newQuestion);
+        // 更新数据并触发组件重渲染
       } else {
-        const newHistory = history.map(e => {
+        const newHistory:any = history.map(e => {
           if(e.id === props.newQuestion?.id) {
-            return props.newQuestion
+            const newItem = {
+              ...e,
+              content: e.content?.concat(props.newQuestion.content)
+            }
+            queryClient.setQueryData(['currentHistory'], newItem);
+            return newItem
           } else {
             return e
           }
@@ -39,7 +49,7 @@ const Slider = (props: { onNewChat: () => void, newQuestion: newTalkInterface|nu
         setHistory(newHistory)
       }
     }
-  }, [props.newQuestion])
+  }, [props.newQuestion, props.newQuestion?.content])
 
   // 点击侧边栏选项
   const onTabClick = (type:string) => {
@@ -48,11 +58,16 @@ const Slider = (props: { onNewChat: () => void, newQuestion: newTalkInterface|nu
   // 新建对话
   const onNewChat = () => {
     props.onNewChat()
+    setCurrent('')
+     // 更新数据并触发组件重渲染
+    queryClient.setQueryData(['currentHistory'], {});
   }
   // 点击历史聊天
   const onHistoryClick = (e:historyObj) => {
     setCurrent(e.id)
     setIsOpen(false)
+    // 更新数据并触发组件重渲染
+    queryClient.setQueryData(['currentHistory'], e);
   }
   // 编辑
   const onEdit = (e:historyObj) => {
@@ -84,6 +99,8 @@ const Slider = (props: { onNewChat: () => void, newQuestion: newTalkInterface|nu
   const onSureDel = () => {
     const newHistory = history.filter(e => e.id !== delData?.id)
     setHistory(newHistory)
+    setCurrent('')
+    queryClient.setQueryData(['currentHistory'], {});
   }
 
   return (

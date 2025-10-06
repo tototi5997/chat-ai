@@ -5,11 +5,20 @@ import IconGlobeSvg from "@/assets/icon-globe.svg";
 import IconArrowUp from "@/assets/icon-arrow-up.png";
 import { useState, type ChangeEvent, useCallback } from "react";
 import { type newTalkInterface } from "@/types/customInterface";
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => void }) {
   const [isDeepThink, setIsDeepThink] = useState<boolean>(false);
+  const [isSending, setIsSending] = useState<boolean>(false);
   const [question, setQuestion] = useState<string>("");
+  const queryClient  = useQueryClient()
 
+  const { data: currentHistory } = useQuery({
+    queryKey: ['currentHistory'],
+    queryFn: () => queryClient.getQueryData(['currentHistory']) || {}
+  });
+
+  // 是否开启深度思考
   const onDeepThink = () => {
     setIsDeepThink((prev) => !prev);
   };
@@ -20,30 +29,60 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
   });
 
   const accepted = fileUpload.acceptedFiles;
-
+  // 输入框数据变化
   const onQuestion = (e: ChangeEvent<HTMLTextAreaElement>) => {
     const newQues = e.target?.value;
     setQuestion(newQues);
   };
-
-  const onSend = useCallback(() => {
-    if (!question.trim()) return;
+  const getAskingData = () => {
+    if (!question.trim() || isSending) return {};
+    const time = Date.now()
     const newData = {
+      id: currentHistory?.id || `new_talk_${Date.now()}`,
       label: "新对话",
-      content: question.trim(),
-      id: `new_talk_${Date.now()}`,
+      content: [{
+        msg: question.trim(),
+        id: `msg_${time}`,
+        time: time,
+        origin: 'user'
+      }],
     };
+    setIsSending(true)
+    // queryClient.setQueryData(['askingData'], newData);
+    const timer = setTimeout(() => {
+      const answerTime = Date.now()
+      const answerData = {
+        id: newData.id,
+        label: "AI回答",
+        content: [{
+          msg: 'AI回答',
+          id: `msg_${answerTime}`,
+          time: answerTime,
+          origin: 'ai'
+        }],
+      };
+      // queryClient.setQueryData(['askingData'], answerData);
+      onAsking(answerData);
+      setIsSending(false)
+      clearTimeout(timer)
+    }, 5000)
     onAsking(newData);
     setQuestion("");
+    return newData
+  }
+  // 发送问题
+  const onSend = useCallback(() => {
+    getAskingData()
+    queryClient.setQueryData(['isNewChat'], false);
   }, [question, onAsking]);
-
+  // 移除附件
   const onCloseFile = useCallback(
     (file: File) => {
       fileUpload.deleteFile(file);
     },
     [fileUpload]
   );
-
+  // 处理附件尺寸展示
   const handleSize = useCallback((size: number) => {
     if (size < 1024 * 1024) {
       const kb = Number((size / 1024).toFixed(2));
@@ -61,10 +100,10 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
     }
   };
   return (
-    <Box w="80%" textAlign="center" overflow="hidden">
-      <Text fontSize="48px" fontWeight="bold" fontFamily="'Rajdhani', sans-serif" color="#fdfcfb" mb="30px">
+    <Box w="80%" textAlign="center">
+      {currentHistory?.content ? <></> : <Text fontSize="48px" fontWeight="bold" fontFamily="'Rajdhani', sans-serif" color="#fdfcfb" mb="30px">
         Chat AI
-      </Text>
+      </Text>}
       {accepted.length > 0 && (
         <Flex w="100%" gap="10px" mb="20px" flexWrap="wrap" role="list" aria-label="已上传的文件">
           {accepted.map((file, index) => (
@@ -149,7 +188,6 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
               justifyContent="center"
               gap="5px"
               onClick={onDeepThink}
-              p="5px 10px"
               transition="all 0.2s"
               aria-label={isDeepThink ? "关闭深度思考" : "开启深度思考"}
               aria-pressed={isDeepThink}
@@ -173,13 +211,13 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
               w="28px"
               h="28px"
               borderRadius="28px"
-              cursor={question.trim() ? "pointer" : "not-allowed"}
-              backgroundColor={question.trim() ? "#ffdfdfff" : "#808080"}
+              cursor={question.trim() && !isSending ? "pointer" : "not-allowed"}
+              backgroundColor={question.trim() && !isSending ? "#ffdfdfff" : "#808080"}
               justifyContent="center"
               alignItems="center"
               onClick={onSend}
               aria-label="发送消息"
-              opacity={question.trim() ? 1 : 0.6}
+              opacity={question.trim() && !isSending ? 1 : 0.6}
               transition="all 0.2s ease"
             >
               <Image src={IconArrowUp} alt="" w="full" h="full" objectFit="contain" />

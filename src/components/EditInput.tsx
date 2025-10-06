@@ -9,7 +9,7 @@ export default function EditInput(props: {value: string, onChange: (value:string
     inputRef.current?.focus()
     setInputValue(props.value)
   }, [])
-  const onInput = (e:ChangeEvent) => {
+  const onInput = (e:ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target?.value)
   }
   return <Input ref={inputRef} value={inputValue} onChange={onInput} onBlur={() => props.onChange(inputValue)}></Input>
