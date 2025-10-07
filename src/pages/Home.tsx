@@ -18,7 +18,6 @@ export default function Home() {
   }
 
   const onAsking = (talk:newTalkInterface) => {
-    console.log(talk, 'talk')
     setNewQuestion(prev => ({ ...talk }));
   }
   return (

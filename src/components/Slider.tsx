@@ -25,7 +25,6 @@ const Slider = (props: { onNewChat: () => void, newQuestion: newTalkInterface|nu
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    console.log(props.newQuestion, current, 'props.newQuestion')
     if(props.newQuestion) {
       if(!current) {
         const newHistory:any = [props.newQuestion, ...history]

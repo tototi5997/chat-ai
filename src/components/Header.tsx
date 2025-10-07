@@ -1,7 +1,9 @@
 import { Box, Button, HStack, Image, Text } from "@chakra-ui/react";
 import Ellipse from "@/assets/ellipse.png";
+import { useNavigate } from 'react-router-dom'
 
 export function Header() {
+  const navigate = useNavigate()
   return (
     <Box as="header" bg="#0c0b0b" px={{ base: 4, md: 8, xl: 12 }} py="12px">
       <HStack mx="auto" w="full" justify="space-between" align="center" gap={{ base: 4, md: 8 }}>
@@ -17,7 +19,7 @@ export function Header() {
           <Button variant="surface" h="28px" w="64px">
             注册
           </Button>
-          <Button variant="outline" h="28px" w="64px">
+          <Button variant="outline" h="28px" w="64px" onClick={() => navigate('/login')}>
             登录
           </Button>
         </HStack>
