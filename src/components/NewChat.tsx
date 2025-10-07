@@ -44,11 +44,12 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
     }
     if (!question.trim()) return {};
     const time = Date.now()
+    const msg = accepted.length ? `${accepted.map(e => e.name).join(',')}\n${question.trim()}` : question.trim()
     const newData = {
       id: currentHistory?.id || `new_talk_${Date.now()}`,
       label: "新对话",
       content: [{
-        msg: question.trim(),
+        msg,
         id: `msg_${time}`,
         time: time,
         origin: 'user'
@@ -73,6 +74,7 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
         }],
       };
       // queryClient.setQueryData(['askingData'], answerData);
+      fileUpload.clearFiles()
       onAsking(answerData);
       setIsSending(false)
       clearTimeout(timer)
@@ -219,13 +221,13 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
               w="28px"
               h="28px"
               borderRadius="28px"
-              cursor={question.trim() || isSending ? "pointer" : "not-allowed"}
-              backgroundColor={question.trim() || isSending ? "#ffdfdfff" : "#808080"}
+              cursor={question.trim() || isSending || accepted.length ? "pointer" : "not-allowed"}
+              backgroundColor={question.trim() || isSending || accepted.length ? "#ffdfdfff" : "#808080"}
               justifyContent="center"
               alignItems="center"
               onClick={onSend}
               aria-label="发送消息"
-              opacity={question.trim() || isSending ? 1 : 0.6}
+              opacity={question.trim() || isSending || accepted.length ? 1 : 0.6}
               transition="all 0.2s ease"
             >
               <Image src={isSending ? IconStop : IconArrowUp} alt="" w="full" h="full" objectFit="contain" />
