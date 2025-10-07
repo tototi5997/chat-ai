@@ -3,10 +3,12 @@ import IconPaperclip from "@/assets/icon-paperclip.png";
 import IconGlobe from "@/assets/icon-globe.png";
 import IconGlobeSvg from "@/assets/icon-globe.svg";
 import IconArrowUp from "@/assets/icon-arrow-up.png";
+import IconStop from "@/assets/icon-stop.png";
 import { useState, type ChangeEvent, useCallback } from "react";
 import { type newTalkInterface } from "@/types/customInterface";
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
+let timer:number|undefined
 export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => void }) {
   const [isDeepThink, setIsDeepThink] = useState<boolean>(false);
   const [isSending, setIsSending] = useState<boolean>(false);
@@ -35,7 +37,12 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
     setQuestion(newQues);
   };
   const getAskingData = () => {
-    if (!question.trim() || isSending) return {};
+    if(isSending) {
+      clearTimeout(timer)
+      setIsSending(false)
+      return
+    }
+    if (!question.trim()) return {};
     const time = Date.now()
     const newData = {
       id: currentHistory?.id || `new_talk_${Date.now()}`,
@@ -47,9 +54,13 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
         origin: 'user'
       }],
     };
+    onAsking(newData);
+    setQuestion("");
     setIsSending(true)
+
     // queryClient.setQueryData(['askingData'], newData);
-    const timer = setTimeout(() => {
+    // todo：调用接口
+    timer = setTimeout(() => {
       const answerTime = Date.now()
       const answerData = {
         id: newData.id,
@@ -66,9 +77,6 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
       setIsSending(false)
       clearTimeout(timer)
     }, 5000)
-    onAsking(newData);
-    setQuestion("");
-    return newData
   }
   // 发送问题
   const onSend = useCallback(() => {
@@ -211,16 +219,16 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
               w="28px"
               h="28px"
               borderRadius="28px"
-              cursor={question.trim() && !isSending ? "pointer" : "not-allowed"}
-              backgroundColor={question.trim() && !isSending ? "#ffdfdfff" : "#808080"}
+              cursor={question.trim() || isSending ? "pointer" : "not-allowed"}
+              backgroundColor={question.trim() || isSending ? "#ffdfdfff" : "#808080"}
               justifyContent="center"
               alignItems="center"
               onClick={onSend}
               aria-label="发送消息"
-              opacity={question.trim() && !isSending ? 1 : 0.6}
+              opacity={question.trim() || isSending ? 1 : 0.6}
               transition="all 0.2s ease"
             >
-              <Image src={IconArrowUp} alt="" w="full" h="full" objectFit="contain" />
+              <Image src={isSending ? IconStop : IconArrowUp} alt="" w="full" h="full" objectFit="contain" />
             </Flex>
           </HStack>
         </Box>
