@@ -16,9 +16,9 @@ export function Header() {
           </Text>
         </HStack>
         <HStack gap={2} align="center">
-          <Button variant="surface" h="28px" w="64px">
+          {/* <Button variant="surface" h="28px" w="64px">
             注册
-          </Button>
+          </Button> */}
           <Button variant="outline" h="28px" w="64px" onClick={() => navigate('/login')}>
             登录
           </Button>

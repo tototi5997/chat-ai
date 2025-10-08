@@ -42,7 +42,7 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
       setIsSending(false)
       return
     }
-    if (!question.trim()) return {};
+    if (!question.trim() && !accepted.length) return {};
     const time = Date.now()
     const msg = accepted.length ? `${accepted.map(e => e.name).join(',')}\n${question.trim()}` : question.trim()
     const newData = {
@@ -58,7 +58,7 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
     onAsking(newData);
     setQuestion("");
     setIsSending(true)
-
+    queryClient.setQueryData(['isNewChat'], false);
     // queryClient.setQueryData(['askingData'], newData);
     // todo：调用接口
     timer = setTimeout(() => {
@@ -83,8 +83,7 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
   // 发送问题
   const onSend = useCallback(() => {
     getAskingData()
-    queryClient.setQueryData(['isNewChat'], false);
-  }, [question, onAsking]);
+  }, [question, accepted, onAsking]);
   // 移除附件
   const onCloseFile = useCallback(
     (file: File) => {
