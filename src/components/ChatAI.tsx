@@ -2,7 +2,7 @@ import { Box, Center, Image, Text, VStack, Flex } from "@chakra-ui/react";
 import Ellipse from "@/assets/ellipse.png";
 import { NewChat } from "./NewChat";
 import { type newTalkInterface } from "@/types/customInterface";
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import ChatContent from "./ChatContent";
 
 const WelcomeBanner = () => {
@@ -21,27 +21,26 @@ const WelcomeBanner = () => {
   );
 };
 
-
 export function ChatAI(props: { onAsking?: (talk: newTalkInterface) => void }) {
   // 获取组件中添加缓存回退
-  const queryClient = useQueryClient()
-  const { data: currentHistory } = useQuery({
-    queryKey: ['currentHistory'],
-    queryFn: () => queryClient.getQueryData(['currentHistory']) || {}
-  });
+  const queryClient = useQueryClient();
+
   const { data: isNewChat } = useQuery({
-    queryKey: ['isNewChat'],
-    queryFn: () => queryClient.getQueryData(['currentHistory']) || false
+    queryKey: ["isNewChat"],
+    queryFn: () => queryClient.getQueryData(["currentHistory"]) || false,
   });
+
   return (
     <Box h="90vh" flex={1} mx={3} my={3} border="1px solid" borderColor="#423d3d" borderRadius="8px" bg="rgba(26, 21, 22, 0.6)">
-      <Flex flexDir="column" align="center" justify={currentHistory?.content ? 'space-between' : 'center'} w="full" h="full" py={16} px={8}>
-        {(isNewChat || currentHistory?.content) ? (
+      <Flex flexDir="column" align="center" justify="center" w="full" h="full" py={16} px={8}>
+        {isNewChat ? (
           <>
-            {currentHistory?.content && currentHistory?.content.length ? <ChatContent/> : <></>}
+            <ChatContent />
             <NewChat onAsking={($event) => props.onAsking?.($event)} />
           </>
-        ) : <WelcomeBanner />}
+        ) : (
+          <WelcomeBanner />
+        )}
       </Flex>
     </Box>
   );

@@ -6,24 +6,19 @@ import IconArrowUp from "@/assets/icon-arrow-up.png";
 import IconStop from "@/assets/icon-stop.png";
 import { useState, type ChangeEvent, useCallback } from "react";
 import { type newTalkInterface } from "@/types/customInterface";
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useGetRequesetDemo, usePostRequestDemo } from "@/state";
 
-let timer:number|undefined
 export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => void }) {
-  const [isDeepThink, setIsDeepThink] = useState<boolean>(false);
-  const [isSending, setIsSending] = useState<boolean>(false);
-  const [question, setQuestion] = useState<string>("");
-  const queryClient  = useQueryClient()
+  const [isDeepThink, setIsDeepThink] = useState<boolean>(false); // 是否开启深度思考
+  const [question, setQuestion] = useState<string>(""); // 输入框数据
+  const [currentHistory, setCurrentHistory] = useState<newTalkInterface | null>(null); // 当前对话
 
-  const { data: currentHistory } = useQuery({
-    queryKey: ['currentHistory'],
-    queryFn: () => queryClient.getQueryData(['currentHistory']) || {}
-  });
+  // get请求模拟
+  const { data } = useGetRequesetDemo({ query: "demo" });
 
-  // 是否开启深度思考
-  const onDeepThink = () => {
-    setIsDeepThink((prev) => !prev);
-  };
+  const mockPostFunc = usePostRequestDemo();
+
+  const isAiPendding = mockPostFunc.isPending;
 
   const fileUpload = useFileUpload({
     maxFiles: 10,
@@ -31,59 +26,15 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
   });
 
   const accepted = fileUpload.acceptedFiles;
+
+  // 是否开启深度思考
+  const onDeepThink = () => setIsDeepThink((prev) => !prev);
+
   // 输入框数据变化
   const onQuestion = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    const newQues = e.target?.value;
-    setQuestion(newQues);
+    setQuestion(e.target?.value);
   };
-  const getAskingData = () => {
-    if(isSending) {
-      clearTimeout(timer)
-      setIsSending(false)
-      return
-    }
-    if (!question.trim() && !accepted.length) return {};
-    const time = Date.now()
-    const msg = accepted.length ? `${accepted.map(e => e.name).join(',')}\n${question.trim()}` : question.trim()
-    const newData = {
-      id: currentHistory?.id || `new_talk_${Date.now()}`,
-      label: "新对话",
-      content: [{
-        msg,
-        id: `msg_${time}`,
-        time: time,
-        origin: 'user'
-      }],
-    };
-    onAsking(newData);
-    setQuestion("");
-    setIsSending(true)
-    queryClient.setQueryData(['isNewChat'], false);
-    // queryClient.setQueryData(['askingData'], newData);
-    // todo：调用接口
-    timer = setTimeout(() => {
-      const answerTime = Date.now()
-      const answerData = {
-        id: newData.id,
-        label: "AI回答",
-        content: [{
-          msg: 'AI回答',
-          id: `msg_${answerTime}`,
-          time: answerTime,
-          origin: 'ai'
-        }],
-      };
-      // queryClient.setQueryData(['askingData'], answerData);
-      fileUpload.clearFiles()
-      onAsking(answerData);
-      setIsSending(false)
-      clearTimeout(timer)
-    }, 5000)
-  }
-  // 发送问题
-  const onSend = useCallback(() => {
-    getAskingData()
-  }, [question, accepted, onAsking]);
+
   // 移除附件
   const onCloseFile = useCallback(
     (file: File) => {
@@ -91,6 +42,7 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
     },
     [fileUpload]
   );
+
   // 处理附件尺寸展示
   const handleSize = useCallback((size: number) => {
     if (size < 1024 * 1024) {
@@ -105,14 +57,34 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      onSend();
     }
   };
+
+  const onClickSendMessage = async () => {
+    const data = await mockPostFunc.mutateAsync(question);
+    setCurrentHistory({
+      id: "mockId",
+      label: "智能体记录",
+      content: [
+        {
+          origin: "user",
+          msg: question,
+          time: Date.now(),
+          id: "mockId",
+        },
+      ],
+    });
+  };
+
   return (
     <Box w="80%" textAlign="center">
-      {currentHistory?.content ? <></> : <Text fontSize="48px" fontWeight="bold" fontFamily="'Rajdhani', sans-serif" color="#fdfcfb" mb="30px">
-        Chat AI
-      </Text>}
+      {currentHistory?.content ? (
+        <></>
+      ) : (
+        <Text fontSize="48px" fontWeight="bold" fontFamily="'Rajdhani', sans-serif" color="#fdfcfb" mb="30px">
+          Chat AI
+        </Text>
+      )}
       {accepted.length > 0 && (
         <Flex w="100%" gap="10px" mb="20px" flexWrap="wrap" role="list" aria-label="已上传的文件">
           {accepted.map((file, index) => (
@@ -220,16 +192,16 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
               w="28px"
               h="28px"
               borderRadius="28px"
-              cursor={question.trim() || isSending || accepted.length ? "pointer" : "not-allowed"}
-              backgroundColor={question.trim() || isSending || accepted.length ? "#ffdfdfff" : "#808080"}
+              cursor={question.trim() || isAiPendding || accepted.length ? "pointer" : "not-allowed"}
+              backgroundColor={question.trim() || isAiPendding || accepted.length ? "#ffdfdfff" : "#808080"}
               justifyContent="center"
               alignItems="center"
-              onClick={onSend}
+              onClick={onClickSendMessage}
               aria-label="发送消息"
-              opacity={question.trim() || isSending || accepted.length ? 1 : 0.6}
+              opacity={question.trim() || isAiPendding || accepted.length ? 1 : 0.6}
               transition="all 0.2s ease"
             >
-              <Image src={isSending ? IconStop : IconArrowUp} alt="" w="full" h="full" objectFit="contain" />
+              <Image src={isAiPendding ? IconStop : IconArrowUp} alt="" w="full" h="full" objectFit="contain" />
             </Flex>
           </HStack>
         </Box>
