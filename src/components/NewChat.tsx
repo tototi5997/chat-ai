@@ -7,6 +7,7 @@ import IconStop from "@/assets/icon-stop.png";
 import { useState, type ChangeEvent, useCallback } from "react";
 import { type newTalkInterface } from "@/types/customInterface";
 import { useGetRequesetDemo, usePostRequestDemo } from "@/state";
+import { fetchWithSSE } from '@/api/sse'
 
 export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => void }) {
   const [isDeepThink, setIsDeepThink] = useState<boolean>(false); // 是否开启深度思考
