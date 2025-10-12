@@ -6,7 +6,7 @@ import IconArrowUp from "@/assets/icon-arrow-up.png";
 import IconStop from "@/assets/icon-stop.png";
 import { useState, type ChangeEvent, useCallback } from "react";
 import { type newTalkInterface } from "@/types/customInterface";
-import { useGetRequesetDemo, usePostRequestDemo } from "@/state";
+import { useNewChat, usePostRequestDemo } from "@/state";
 import { fetchWithSSE } from '@/api/sse'
 
 export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => void }) {
@@ -15,7 +15,7 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
   const [currentHistory, setCurrentHistory] = useState<newTalkInterface | null>(null); // 当前对话
 
   // get请求模拟
-  const { data } = useGetRequesetDemo({ query: "demo" });
+  const { data } = useNewChat({ title: "智能体记录" });
 
   const mockPostFunc = usePostRequestDemo();
 

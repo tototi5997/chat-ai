@@ -1,25 +1,54 @@
+import request from "./request";
+
 // 模拟 GET 请求，1 秒后返回空数组
-export type GetDemoResponse = {
+export type ChatInterface = {
   id: number;
+  title: string;
+  created_at: string;
+  updated_at?: string;
+};
+
+export type NewChatParams = {
   title: string;
 };
 
-export type GetDemoParams = {
-  query?: string;
-  limit?: number;
+export type UpdateChatInterface = {
+  chat_id: string;
+  title: string;
+};
+// 获取历史聊天记录
+export const getChatList = () => {
+  return request({
+    method: 'post',
+    url: '/chat/list'
+  })
 };
 
-export const getRequestDemoAPI = async (params: GetDemoParams): Promise<GetDemoResponse[]> => {
-  return new Promise((resolve) => {
-    setTimeout(
-      () =>
-        resolve([
-          { id: 1, title: "智能体聊天记录" },
-          { id: 2, title: "智能体聊天记录" },
-        ]),
-      1000
-    );
-  });
+// 新增对话
+export const newChat = (data: NewChatParams): Promise<ChatInterface[]> => {
+  return request({
+    method: 'post',
+    url: '/chat/new',
+    data
+  })
+};
+
+// 更新历史对话名称
+export const updateChatTitle = (data:UpdateChatInterface) => {
+  return request({
+    method: 'post',
+    url: `/chat/update/${data.chat_id}`,
+    data: {
+      title: data.title
+    }
+  })
+};
+// 删除历史对话
+export const delChat = (chat_id:string) => {
+  return request({
+    method: 'post',
+    url: `/chat/delete/${chat_id}`
+  })
 };
 
 // 模拟 POST 请求，800ms 后返回回显结果

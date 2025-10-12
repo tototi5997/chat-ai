@@ -1,14 +1,15 @@
-import { getRequestDemoAPI, postRequestDemoAPI, type GetDemoParams } from "@/api";
+import { newChat, postRequestDemoAPI, getChatList, updateChatTitle, delChat, type NewChatParams, type ChatInterface } from "@/api";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 // get请求式例
 // 1. 在api文件中创建getRequestDemoAPI函数
 // 2. 在state文件中创建useGetRequesetDemo函数，这里可以对入参或者接口返回的数据进行二次处理
 // 3. 在组件中使用useGetRequesetDemo函数
-export const useGetRequesetDemo = (params: GetDemoParams) => {
+// 新对话
+export const useNewChat = (params: NewChatParams) => {
   return useQuery({
-    queryKey: ["get_requert_demo"],
-    queryFn: () => getRequestDemoAPI(params),
+    queryKey: ["new_chat"],
+    queryFn: () => newChat(params),
   });
 };
 
@@ -19,5 +20,32 @@ export const useGetRequesetDemo = (params: GetDemoParams) => {
 export const usePostRequestDemo = () => {
   return useMutation({
     mutationFn: postRequestDemoAPI,
+  });
+};
+// 修改名称
+export const useUpdateChatTitle = () => {
+  return useMutation({
+    mutationFn: updateChatTitle,
+  });
+};
+// 删除
+export const useDelChat = () => {
+  return useMutation({
+    mutationFn: delChat,
+  });
+};
+// 历史聊天记录列表
+export const useChatList = () => {
+  return useQuery({
+    queryKey: ["chat_list"],
+    queryFn: async () => {
+      const res = await getChatList()
+      return (res.data || []).map((e:ChatInterface) => ({
+        id: e.id,
+        created_at: e.created_at,
+        updated_at: e.updated_at,
+        label: e.title,
+      }))
+    },
   });
 };

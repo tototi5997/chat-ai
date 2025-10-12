@@ -9,13 +9,17 @@ import EditInput from "./EditInput";
 import DelDialog from "./DelDialog";
 import { type newTalkInterface, type contentInterface } from '@/types/customInterface'
 import { useQueryClient } from '@tanstack/react-query';
+import { useChatList, useUpdateChatTitle, useDelChat } from "@/state";
+
 interface historyObj {
   id: string;
   label: string;
   content?: contentInterface;
+  created_at?: string;
+  updated_at?: string;
 }
 const Slider = (props: { onNewChat: () => void, newQuestion: newTalkInterface|null }) => {
-  const [history, setHistory] = useState<historyObj[]>([{id: '1', label: '智能体记录'}, {id: '2', label: '智能体记录2'}])
+  // const [history, setHistory] = useState<historyObj[]>([{id: '1', label: '智能体记录'}, {id: '2', label: '智能体记录2'}])
   const [current, setCurrent] = useState('')
   const [isOpen, setIsOpen] = useState(false)
   const [editData, setEditData] = useState<historyObj | null>()
@@ -23,21 +27,26 @@ const Slider = (props: { onNewChat: () => void, newQuestion: newTalkInterface|nu
   const [inputValue, setInputValue] = useState<string>('')
   const [visible, setVisible] = useState(false)
   const queryClient = useQueryClient();
+  // 历史聊天记录列表
+  const { data: history = [] } = useChatList();
+  const updateChatTitle = useUpdateChatTitle();
+  const delChat = useDelChat();
 
   useEffect(() => {
     if(props.newQuestion) {
       if(!current) {
         const newHistory:any = [props.newQuestion, ...history]
-        setHistory(newHistory)
+        // setHistory(newHistory)
+        queryClient.setQueryData(['chat_list'], newHistory);
         setCurrent(props.newQuestion.id)
         queryClient.setQueryData(['currentHistory'], props.newQuestion);
         // 更新数据并触发组件重渲染
       } else {
-        const newHistory:any = history.map(e => {
+        const newHistory:any = history.map((e:historyObj) => {
           if(e.id === props.newQuestion?.id) {
             const newItem = {
               ...e,
-              content: e.content?.concat(props.newQuestion.content)
+              content: e.content?.concat(props.newQuestion?.content)
             }
             queryClient.setQueryData(['currentHistory'], newItem);
             return newItem
@@ -45,7 +54,8 @@ const Slider = (props: { onNewChat: () => void, newQuestion: newTalkInterface|nu
             return e
           }
         })
-        setHistory(newHistory)
+        // setHistory(newHistory)
+        queryClient.setQueryData(['chat_list'], newHistory);
       }
     }
   }, [props.newQuestion, props.newQuestion?.content])
@@ -75,12 +85,16 @@ const Slider = (props: { onNewChat: () => void, newQuestion: newTalkInterface|nu
     setInputValue(e.label)
   }
   // 删除
-  const onDel = (e:historyObj) => {
+  const onDel = async (e:historyObj) => {
     setDelData(e)
     setVisible(true)
   }
-  const inputChange = (value:string, item:historyObj) => {
-    const newHistory = history.map(e => {
+  const inputChange = async (value:string, item:historyObj) => {
+    await updateChatTitle.mutateAsync({
+      chat_id: item.id,
+      title: value
+    });
+    const newHistory = history.map((e:historyObj) => {
       if(item.id === e.id) {
         return {
           ...e,
@@ -90,14 +104,20 @@ const Slider = (props: { onNewChat: () => void, newQuestion: newTalkInterface|nu
         return e
       }
     })
-    setHistory(newHistory)
+
+    queryClient.setQueryData(['chat_list'], newHistory);
+    // setHistory(newHistory)
     setEditData(null)
   }
 
   // 确认删除
-  const onSureDel = () => {
-    const newHistory = history.filter(e => e.id !== delData?.id)
-    setHistory(newHistory)
+  const onSureDel = async () => {
+    if(delData) {
+      await delChat.mutateAsync(delData.id)
+    }
+    const newHistory = history.filter((e:historyObj) => e.id !== delData?.id)
+    queryClient.setQueryData(['chat_list'], newHistory);
+    // setHistory(newHistory)
     setCurrent('')
     queryClient.setQueryData(['currentHistory'], {});
   }
@@ -148,7 +168,7 @@ const Slider = (props: { onNewChat: () => void, newQuestion: newTalkInterface|nu
               最近聊天
             </Text>
           </HStack>
-          {history.map(e => (
+          {history.map((e:historyObj) => (
             <Flex key={e.id} w="100%" justify="space-between" alignItems="center" p="10px" cursor="pointer" borderRadius="8px" _hover={{backgroundColor: '#FFFFFF1A'}} backgroundColor={current === e.id ? '#FFFFFF1A' : ''} onClick={() => onHistoryClick(e)}>
               {editData?.id === e.id ? <EditInput value={inputValue} onChange={(value) => inputChange(value, e)} /> :<Text fontSize="14px" fontFamily="PingFang SC" color="#FDFCFB">
                 {e.label}
