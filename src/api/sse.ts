@@ -91,7 +91,7 @@ export function fetchWithSSE(url:string, params = {}, onMessage: (func: any) => 
                 .filter(event => event.data || event.type) // 过滤空事件
             }
             const chunk = decoder.decode(value, { stream: true })
-            if (chunk.startsWith('event:')) {
+            if (chunk.startsWith('data:')) {
               try {
                 onMessage(parseSSEStream(chunk))
               } catch (error) {

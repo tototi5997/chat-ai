@@ -41,7 +41,7 @@ export const useChatList = () => {
     queryFn: async () => {
       const res = await getChatList()
       return (res.data || []).map((e:ChatInterface) => ({
-        id: e.id,
+        id: e.id || e.Id,
         created_at: e.created_at,
         updated_at: e.updated_at,
         label: e.title,

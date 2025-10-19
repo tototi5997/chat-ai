@@ -2,7 +2,8 @@ import request from "./request";
 
 // 模拟 GET 请求，1 秒后返回空数组
 export type ChatInterface = {
-  id: number;
+  id?: number;
+  Id?: number;
   title: string;
   created_at: string;
   updated_at?: string;

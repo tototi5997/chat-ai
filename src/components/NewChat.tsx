@@ -8,11 +8,15 @@ import { useState, type ChangeEvent, useCallback } from "react";
 import { type newTalkInterface } from "@/types/customInterface";
 import { useNewChat, usePostRequestDemo } from "@/state";
 import { fetchWithSSE } from '@/api/sse'
+import { useQueryClient } from '@tanstack/react-query';
 
+let cancelSSE
 export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => void }) {
   const [isDeepThink, setIsDeepThink] = useState<boolean>(false); // 是否开启深度思考
   const [question, setQuestion] = useState<string>(""); // 输入框数据
   const [currentHistory, setCurrentHistory] = useState<newTalkInterface | null>(null); // 当前对话
+  const [text, setText] = useState('')
+  const queryClient = useQueryClient();
 
   // get请求模拟
   const { data } = useNewChat({ title: "智能体记录" });
@@ -62,21 +66,78 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
   };
 
   const onClickSendMessage = async () => {
-    const data = await mockPostFunc.mutateAsync(question);
-    setCurrentHistory({
-      id: "mockId",
-      label: "智能体记录",
-      content: [
-        {
-          origin: "user",
-          msg: question,
-          time: Date.now(),
-          id: "mockId",
-        },
-      ],
-    });
+    // const data = await mockPostFunc.mutateAsync(question);
+    // setCurrentHistory({
+    //   id: "mockId",
+    //   label: "智能体记录",
+    //   content: [
+    //     {
+    //       origin: "user",
+    //       msg: question,
+    //       time: Date.now(),
+    //       id: "mockId",
+    //     },
+    //   ],
+    // });
+    // console.log(queryClient, 'queryClient')
+    fetchWithSSE(`/api/chat/0c997fc3-3b81-4448-96f8-f3d54de7fe10/stream`, {
+      messages: [{
+        content: '111',
+        name: '',
+        role: ''
+      }],
+      metadata: '',
+      user: ''
+    }, handleSSEMessage,
+      handleSSEError,
+      handleStreamStart,
+      handleStreamComplete).then(cancelFunc => {
+          cancelSSE = cancelFunc // 存储取消连接的函数
+        })
+        .catch(error => {
+          console.error('Failed to start SSE connection:', error)
+        })
+    
   };
 
+  function handleSSEMessage(data) {
+    console.log(data,'data111')
+    if (data.length && data.length > 0) {
+      // 更新数据并触发组件重渲染
+      queryClient.setQueryData(['currentHistory'], e);
+      // const activeChat = this.chatHistory.find(chat => chat.id === this.activeChatId)
+      // const botIndex = activeChat.messages.length - 1
+      // const botMessage = activeChat.messages[botIndex]
+      botMessage.content += data.map(item => item.data).join('')
+      // botMessage.displayContent = this.formatContent(botMessage.content)
+      // this.$set(activeChat.messages, botIndex, { ...botMessage })
+      // this.scrollToBottom()
+    }
+  }
+  function handleSSEError(error) {
+    // if (this.messages[this.messages.length - 1].content == '思考中...') {
+    //   this.messages[this.messages.length - 1].content = '服务器异常，请稍后再试'
+    // }
+    console.error('SSE Error:', error)
+  }
+  function handleStreamStart() {
+    console.log('Stream has started.')
+  }
+  function handleStreamComplete() {
+    console.log('Stream has completed.')
+    // const activeChat = this.chatHistory.find(chat => chat.id === this.activeChatId)
+    // const botIndex = activeChat.messages.length - 1
+    // const botMessage = activeChat.messages[botIndex]
+    // setQuestion('')
+    // // this.scrollToBottom()
+    // botMessage.isStreaming = false
+    // this.$set(activeChat.messages, botIndex, { ...botMessage })
+  }
+  function cancelConnection() {
+    if (cancelSSE) {
+      cancelSSE() // 调用取消连接的函数
+    }
+  }
   return (
     <Box w="80%" textAlign="center">
       {currentHistory?.content ? (
