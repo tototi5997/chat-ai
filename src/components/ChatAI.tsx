@@ -4,6 +4,7 @@ import { NewChat } from "./NewChat";
 import { type newTalkInterface } from "@/types/customInterface";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import ChatContent from "./ChatContent";
+import ZustandUsageExample from "./ZustandUsageExample";
 
 const WelcomeBanner = () => {
   return (
@@ -16,6 +17,7 @@ const WelcomeBanner = () => {
         <Text textStyle="h7" maxW="480px">
           我可以帮你分析目标地址的资金情况，你可以简单描述你的追踪需求，例如目标地址、目标链、追踪Token与追踪时间范围等。
         </Text>
+        <ZustandUsageExample />
       </VStack>
     </VStack>
   );

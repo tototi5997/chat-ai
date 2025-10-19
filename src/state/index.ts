@@ -39,13 +39,13 @@ export const useChatList = () => {
   return useQuery({
     queryKey: ["chat_list"],
     queryFn: async () => {
-      const res = await getChatList()
-      return (res.data || []).map((e:ChatInterface) => ({
+      const res = await getChatList();
+      return (res.data || []).map((e: ChatInterface) => ({
         id: e.id,
         created_at: e.created_at,
         updated_at: e.updated_at,
         label: e.title,
-      }))
+      }));
     },
   });
 };
