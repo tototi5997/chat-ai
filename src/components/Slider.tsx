@@ -9,7 +9,8 @@ import EditInput from "./EditInput";
 import DelDialog from "./DelDialog";
 import { type newTalkInterface, type contentInterface } from '@/types/customInterface'
 import { useQueryClient } from '@tanstack/react-query';
-import { useChatList, useUpdateChatTitle, useDelChat } from "@/state";
+import { useChatList, useUpdateChatTitle, useDelChat, useGetChatInfo } from "@/state";
+import { useUiStore } from "@/state/useUiStore";
 
 interface historyObj {
   id: string;
@@ -18,7 +19,7 @@ interface historyObj {
   created_at?: string;
   updated_at?: string;
 }
-const Slider = (props: { onNewChat: () => void, newQuestion: newTalkInterface|null }) => {
+const Slider = (props: { newQuestion: newTalkInterface|null }) => {
   // const [history, setHistory] = useState<historyObj[]>([{id: '1', label: '智能体记录'}, {id: '2', label: '智能体记录2'}])
   const [current, setCurrent] = useState('')
   const [isOpen, setIsOpen] = useState(false)
@@ -27,10 +28,14 @@ const Slider = (props: { onNewChat: () => void, newQuestion: newTalkInterface|nu
   const [inputValue, setInputValue] = useState<string>('')
   const [visible, setVisible] = useState(false)
   const queryClient = useQueryClient();
+  // const currentHistory = useUiStore((state) => state.currentHistory);
+  const setCurrentHistory = useUiStore((state) => state.setCurrentHistory);
+  const setIsNewChat = useUiStore((state) => state.setIsNewChat);
   // 历史聊天记录列表
   const { data: history = [] } = useChatList();
   const updateChatTitle = useUpdateChatTitle();
   const delChat = useDelChat();
+  const getChatInfo = useGetChatInfo();
 
   useEffect(() => {
     if(props.newQuestion) {
@@ -39,7 +44,8 @@ const Slider = (props: { onNewChat: () => void, newQuestion: newTalkInterface|nu
         // setHistory(newHistory)
         queryClient.setQueryData(['chat_list'], newHistory);
         setCurrent(props.newQuestion.id)
-        queryClient.setQueryData(['currentHistory'], props.newQuestion);
+        setCurrentHistory(props.newQuestion)
+        // queryClient.setQueryData(['currentHistory'], props.newQuestion);
         // 更新数据并触发组件重渲染
       } else {
         const newHistory:any = history.map((e:historyObj) => {
@@ -48,7 +54,8 @@ const Slider = (props: { onNewChat: () => void, newQuestion: newTalkInterface|nu
               ...e,
               content: e.content?.concat(props.newQuestion?.content)
             }
-            queryClient.setQueryData(['currentHistory'], newItem);
+            setCurrentHistory(newItem)
+            // queryClient.setQueryData(['currentHistory'], newItem);
             return newItem
           } else {
             return e
@@ -66,17 +73,23 @@ const Slider = (props: { onNewChat: () => void, newQuestion: newTalkInterface|nu
   }
   // 新建对话
   const onNewChat = () => {
-    props.onNewChat()
+    setIsNewChat(true)
     setCurrent('')
-     // 更新数据并触发组件重渲染
-    queryClient.setQueryData(['currentHistory'], {});
+    // 更新数据并触发组件重渲染
+    setCurrentHistory({})
   }
   // 点击历史聊天
-  const onHistoryClick = (e:historyObj) => {
+  const onHistoryClick = async (e:historyObj) => {
     setCurrent(e.id)
     setIsOpen(false)
-    // 更新数据并触发组件重渲染
-    queryClient.setQueryData(['currentHistory'], e);
+    const res = await getChatInfo.mutateAsync(e.id)
+    // botMessage.content += res.data.messages.map(item => item.data ? JSON.parse(item.data).reasoning_content : '').join('')
+    // botMessage.displayContent = formatContent(botMessage.content)
+    setCurrentHistory({
+      ...e,
+      messages: res.data.messages || []
+    })
+    setIsNewChat(false)
   }
   // 编辑
   const onEdit = (e:historyObj) => {
@@ -106,7 +119,7 @@ const Slider = (props: { onNewChat: () => void, newQuestion: newTalkInterface|nu
     })
 
     queryClient.setQueryData(['chat_list'], newHistory);
-    // setHistory(newHistory)
+
     setEditData(null)
   }
 
@@ -117,9 +130,9 @@ const Slider = (props: { onNewChat: () => void, newQuestion: newTalkInterface|nu
     }
     const newHistory = history.filter((e:historyObj) => e.id !== delData?.id)
     queryClient.setQueryData(['chat_list'], newHistory);
-    // setHistory(newHistory)
+
     setCurrent('')
-    queryClient.setQueryData(['currentHistory'], {});
+    setCurrentHistory({})
   }
 
   return (

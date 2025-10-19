@@ -9,17 +9,20 @@ import { type newTalkInterface } from "@/types/customInterface";
 import { useNewChat, usePostRequestDemo } from "@/state";
 import { fetchWithSSE } from '@/api/sse'
 import { useQueryClient } from '@tanstack/react-query';
+import { useUiStore } from "@/state/useUiStore";
 
 let cancelSSE
 export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => void }) {
   const [isDeepThink, setIsDeepThink] = useState<boolean>(false); // 是否开启深度思考
   const [question, setQuestion] = useState<string>(""); // 输入框数据
-  const [currentHistory, setCurrentHistory] = useState<newTalkInterface | null>(null); // 当前对话
-  const [text, setText] = useState('')
-  const queryClient = useQueryClient();
+
+  const currentHistory = useUiStore((state) => state.currentHistory);
+  const isNewChat = useUiStore((state) => state.isNewChat);
+  const setCurrentHistory = useUiStore((state) => state.setCurrentHistory);
+  const setIsNewChat = useUiStore((state) => state.setIsNewChat);
 
   // get请求模拟
-  const { data } = useNewChat({ title: "智能体记录" });
+  const newChat = useNewChat();
 
   const mockPostFunc = usePostRequestDemo();
 
@@ -66,52 +69,70 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
   };
 
   const onClickSendMessage = async () => {
-    // const data = await mockPostFunc.mutateAsync(question);
-    // setCurrentHistory({
-    //   id: "mockId",
-    //   label: "智能体记录",
-    //   content: [
-    //     {
-    //       origin: "user",
-    //       msg: question,
-    //       time: Date.now(),
-    //       id: "mockId",
-    //     },
-    //   ],
-    // });
-    // console.log(queryClient, 'queryClient')
-    fetchWithSSE(`/api/chat/0c997fc3-3b81-4448-96f8-f3d54de7fe10/stream`, {
+    let chatId = ''
+    if(isNewChat) {
+      const newChatData = await newChat.mutateAsync({title: '智能体记录'})
+      setCurrentHistory({
+        ...newChatData
+      })
+      chatId = newChatData.data?.id
+    } else {
+      const newCurrentHistory = JSON.parse(JSON.stringify(currentHistory))
+      newCurrentHistory.messages.push({
+        role: 'user',
+        content: question
+      }, {
+        role: 'assistant',
+        content: ''
+      })
+      setCurrentHistory(newCurrentHistory)
+      chatId = currentHistory.id
+    }
+    
+    fetchWithSSE(`/api/chat/${chatId}/stream`, {
       messages: [{
-        content: '111',
+        content: question,
         name: '',
         role: ''
       }],
       metadata: '',
       user: ''
-    }, handleSSEMessage,
+    },
+      handleSSEMessage,
       handleSSEError,
       handleStreamStart,
-      handleStreamComplete).then(cancelFunc => {
-          cancelSSE = cancelFunc // 存储取消连接的函数
-        })
-        .catch(error => {
-          console.error('Failed to start SSE connection:', error)
-        })
-    
+      handleStreamComplete
+    ).then(cancelFunc => {
+      cancelSSE = cancelFunc // 存储取消连接的函数
+      setIsNewChat(false)
+      setQuestion('')
+    })
+    .catch(error => {
+      console.error('Failed to start SSE connection:', error)
+    })
   };
 
   function handleSSEMessage(data) {
-    console.log(data,'data111')
     if (data.length && data.length > 0) {
+      console.log(currentHistory, 'currentHistory')
+      let newCurrentHistory = JSON.parse(JSON.stringify(currentHistory))
+      if(!newCurrentHistory?.messages || !newCurrentHistory?.messages?.length) {
+        newCurrentHistory.messages = [{
+          role: 'user',
+          content: question
+        }, {
+          role: 'assistant',
+          content: ''
+        }]
+      }
       // 更新数据并触发组件重渲染
-      queryClient.setQueryData(['currentHistory'], e);
-      // const activeChat = this.chatHistory.find(chat => chat.id === this.activeChatId)
-      // const botIndex = activeChat.messages.length - 1
-      // const botMessage = activeChat.messages[botIndex]
-      botMessage.content += data.map(item => item.data).join('')
-      // botMessage.displayContent = this.formatContent(botMessage.content)
-      // this.$set(activeChat.messages, botIndex, { ...botMessage })
-      // this.scrollToBottom()
+      const botIndex = newCurrentHistory.messages.length - 1
+      const botMessage = newCurrentHistory.messages[botIndex]
+      botMessage.content += data.map(item => item.data ? JSON.parse(item.data).reasoning_content : '').join('')
+      botMessage.displayContent = formatContent(botMessage.content)
+      newCurrentHistory.messages[botIndex] = botMessage
+      console.log(newCurrentHistory, 'newCurrentHistory')
+      setCurrentHistory(newCurrentHistory)
     }
   }
   function handleSSEError(error) {
@@ -138,6 +159,26 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
       cancelSSE() // 调用取消连接的函数
     }
   }
+  function formatContent(text) {
+    // 阶段1基础转换
+    let formatted = text
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      .replace(/^(\d+)\.\s(.+)/gm, '<li>$2</li>')
+      .replace(/^-\s(.+)/gm, '<li>• $1</li>')
+      .replace(/\n/g, '<br>')
+
+    // 阶段2结构优化
+    formatted = formatted
+      .replace(/(<li>.*?<\/li>)+/g, list => {
+        const isOrdered = list.startsWith('<li>1')
+        return isOrdered ? `<ol>${list}</ol>` : `<ul>${list}</ul>`
+      })
+      .replace(/<br><br>/g, '</p><p>')
+
+    return formatted
+  }
+  
   return (
     <Box w="80%" textAlign="center">
       {currentHistory?.content ? (

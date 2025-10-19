@@ -1,4 +1,4 @@
-import { newChat, postRequestDemoAPI, getChatList, updateChatTitle, delChat, type NewChatParams, type ChatInterface } from "@/api";
+import { newChat, getChatInfo, postRequestDemoAPI, getChatList, updateChatTitle, delChat, type NewChatParams, type ChatInterface } from "@/api";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 // get请求式例
@@ -6,12 +6,18 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 // 2. 在state文件中创建useGetRequesetDemo函数，这里可以对入参或者接口返回的数据进行二次处理
 // 3. 在组件中使用useGetRequesetDemo函数
 // 新对话
-export const useNewChat = (params: NewChatParams) => {
-  return useQuery({
-    queryKey: ["new_chat"],
-    queryFn: () => newChat(params),
+export const useNewChat = () => {
+  return useMutation({
+    mutationFn: newChat,
   });
 };
+// 获取对话信息
+export const useGetChatInfo = () => {
+  return useMutation({
+    mutationFn: getChatInfo,
+  });
+};
+
 
 // post请求示例
 // 1. 在api文件中创建postRequestDemoAPI函数

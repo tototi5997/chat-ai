@@ -33,6 +33,13 @@ export const newChat = (data: NewChatParams): Promise<ChatInterface[]> => {
     data
   })
 };
+// 获取对话信息
+export const getChatInfo = (chat_id: string) => {
+  return request({
+    method: 'post',
+    url: `/chat/get/${chat_id}`,
+  })
+};
 
 // 更新历史对话名称
 export const updateChatTitle = (data:UpdateChatInterface) => {

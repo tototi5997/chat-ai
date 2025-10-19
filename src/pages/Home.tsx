@@ -7,16 +7,8 @@ import { type newTalkInterface } from '@/types/customInterface'
 import { useQueryClient } from '@tanstack/react-query';
 
 export default function Home() {
-  // const [isNewChat, setIsNewChat] = useState<boolean>(false)
   const [newQuestion, setNewQuestion] = useState<newTalkInterface|null>(null)
-  const queryClient = useQueryClient();
-
-  // 新建对话
-  const openChat = () => {
-    // setIsNewChat(true)
-    queryClient.setQueryData(['isNewChat'], true);
-  }
-
+  
   const onAsking = (talk:newTalkInterface) => {
     setNewQuestion(prev => ({ ...talk }));
   }
@@ -24,7 +16,7 @@ export default function Home() {
     <Box minH="100vh" bgGradient="linear(180deg, #141012 0%, #0e0b0c 38%, #3d2219 100%)" color="rgba(253, 252, 251, 0.82)">
       <Header />
       <Flex w="full" minH="calc(100vh - 72px)">
-        <Slider onNewChat={openChat} newQuestion={newQuestion} />
+        <Slider newQuestion={newQuestion} />
         <ChatAI onAsking={onAsking} />
       </Flex>
     </Box>
