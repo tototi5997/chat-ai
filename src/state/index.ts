@@ -45,7 +45,7 @@ export const useChatList = () => {
         created_at: e.created_at,
         updated_at: e.updated_at,
         label: e.title,
-      }))
+      }));
     },
   });
 };
