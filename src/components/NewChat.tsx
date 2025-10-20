@@ -73,7 +73,11 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
     if(isNewChat) {
       const newChatData = await newChat.mutateAsync({title: '智能体记录'})
       setCurrentHistory({
-        ...newChatData
+        ...newChatData,
+        messages: [{
+          role: 'user',
+          content: question
+        }]
       })
       chatId = newChatData.data?.id
     } else {
@@ -81,11 +85,8 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
       newCurrentHistory.messages.push({
         role: 'user',
         content: question
-      }, {
-        role: 'assistant',
-        content: ''
       })
-      setCurrentHistory(newCurrentHistory)
+      setCurrentHistory({...newCurrentHistory})
       chatId = currentHistory.id
     }
     
@@ -93,12 +94,12 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
       messages: [{
         content: question,
         name: '',
-        role: ''
+        role: 'user'
       }],
       metadata: '',
       user: ''
     },
-      handleSSEMessage,
+      (res) => handleSSEMessage(res, currentHistory),
       handleSSEError,
       handleStreamStart,
       handleStreamComplete
@@ -112,27 +113,28 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
     })
   };
 
-  function handleSSEMessage(data) {
+  function handleSSEMessage(data, current) {
     if (data.length && data.length > 0) {
-      console.log(currentHistory, 'currentHistory')
-      let newCurrentHistory = JSON.parse(JSON.stringify(currentHistory))
-      if(!newCurrentHistory?.messages || !newCurrentHistory?.messages?.length) {
-        newCurrentHistory.messages = [{
-          role: 'user',
-          content: question
-        }, {
-          role: 'assistant',
-          content: ''
-        }]
-      }
+      console.log(current, 'currentHistory')
+      let newCurrentHistory = JSON.parse(JSON.stringify(current))
+      // if(!newCurrentHistory?.messages || !newCurrentHistory?.messages?.length) {
+      //   newCurrentHistory.messages = [{
+      //     role: 'user',
+      //     content: question
+      //   }, {
+      //     role: 'assistant',
+      //     content: ''
+      //   }]
+      // }
+      newCurrentHistory.messages.push(...data)
       // 更新数据并触发组件重渲染
-      const botIndex = newCurrentHistory.messages.length - 1
-      const botMessage = newCurrentHistory.messages[botIndex]
-      botMessage.content += data.map(item => item.data ? JSON.parse(item.data).reasoning_content : '').join('')
-      botMessage.displayContent = formatContent(botMessage.content)
-      newCurrentHistory.messages[botIndex] = botMessage
+      // const botIndex = newCurrentHistory.messages.length - 1
+      // const botMessage = newCurrentHistory.messages[botIndex]
+      // botMessage.content += data.map(item => item.data ? JSON.parse(item.data).reasoning_content : '').join('')
+      // botMessage.displayContent = formatContent(botMessage.content)
+      // newCurrentHistory.messages[botIndex] = botMessage
       console.log(newCurrentHistory, 'newCurrentHistory')
-      setCurrentHistory(newCurrentHistory)
+      setCurrentHistory({...newCurrentHistory})
     }
   }
   function handleSSEError(error) {
