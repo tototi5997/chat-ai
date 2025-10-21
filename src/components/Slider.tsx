@@ -187,39 +187,41 @@ const Slider = (props: { newQuestion: newTalkInterface|null }) => {
               最近聊天
             </Text>
           </HStack>
-          {chatList.map((e:historyObj) => (
-            <Flex key={e.id} w="100%" justify="space-between" alignItems="center" p="10px" cursor="pointer" borderRadius="8px" _hover={{backgroundColor: '#FFFFFF1A'}} backgroundColor={current === e.id ? '#FFFFFF1A' : ''} onClick={() => onHistoryClick(e)}>
-              {editData?.id === e.id ? <EditInput value={inputValue} onChange={(value) => inputChange(value, e)} /> :<Text fontSize="14px" fontFamily="PingFang SC" color="#FDFCFB">
-                {e.label}
-              </Text>}
-              <Popover.Root open={isOpen && e.id === current} key={e.id}>
-                <Popover.Trigger asChild w="16px" h="16px" borderRadius="16px" _hover={{backgroundColor: '#48414199'}}>
-                  <Image src={IconMore} alt="" w="full" h="full" objectFit="contain" onClick={($event) => {$event.stopPropagation(); setCurrent(e.id); setIsOpen(!isOpen)}} />
-                </Popover.Trigger>
-                <Portal>
-                  <Popover.Positioner>
-                    <Popover.Content w="250px" border="1px solid #5E565699" backgroundColor="#48414199">
-                      {/* <Popover.Arrow /> */}
-                      <Popover.Body padding="5px">
-                        <Flex w="100%" alignItems="center" gap="10px" p="10px" cursor="pointer" borderRadius="8px" _hover={{backgroundColor: '#FF840029'}} onClick={() => onEdit(e)}>
-                          <Image src={IconEdit} alt="" w="16px" h="px" objectFit="contain" />
-                          <Text fontSize="14px" fontFamily="PingFang SC" color="#FDFCFB">
-                            编辑对话标题
-                          </Text>
-                        </Flex>
-                        <Flex w="100%" alignItems="center" gap="10px" p="10px" cursor="pointer" borderRadius="8px" _hover={{backgroundColor: '#FF840029'}} onClick={() => onDel(e)}>
-                          <Image src={IconDel} alt="" w="16px" h="px" objectFit="contain" />
-                          <Text fontSize="14px" fontFamily="PingFang SC" color="#FDFCFB">
-                            删除对话
-                          </Text>
-                        </Flex>
-                      </Popover.Body>
-                    </Popover.Content>
-                  </Popover.Positioner>
-                </Portal>
-              </Popover.Root>
-            </Flex>
-          ))}
+          <Box w="100%" maxH="800px" overflow="auto" _scrollbar={{display: 'none'}}>
+            {chatList.map((e:historyObj) => (
+              <Flex key={e.id} w="100%" justify="space-between" alignItems="center" p="10px" cursor="pointer" borderRadius="8px" _hover={{backgroundColor: '#FFFFFF1A'}} backgroundColor={current === e.id ? '#FFFFFF1A' : ''} onClick={() => onHistoryClick(e)}>
+                {editData?.id === e.id ? <EditInput value={inputValue} onChange={(value) => inputChange(value, e)} /> :<Text fontSize="14px" fontFamily="PingFang SC" color="#FDFCFB">
+                  {e.label}
+                </Text>}
+                <Popover.Root open={isOpen && e.id === current} key={e.id}>
+                  <Popover.Trigger asChild w="16px" h="16px" borderRadius="16px" _hover={{backgroundColor: '#48414199'}}>
+                    <Image src={IconMore} alt="" w="full" h="full" objectFit="contain" onClick={($event) => {$event.stopPropagation(); setCurrent(e.id); setIsOpen(!isOpen)}} />
+                  </Popover.Trigger>
+                  <Portal>
+                    <Popover.Positioner>
+                      <Popover.Content w="250px" border="1px solid #5E565699" backgroundColor="#48414199">
+                        {/* <Popover.Arrow /> */}
+                        <Popover.Body padding="5px">
+                          <Flex w="100%" alignItems="center" gap="10px" p="10px" cursor="pointer" borderRadius="8px" _hover={{backgroundColor: '#FF840029'}} onClick={() => onEdit(e)}>
+                            <Image src={IconEdit} alt="" w="16px" h="px" objectFit="contain" />
+                            <Text fontSize="14px" fontFamily="PingFang SC" color="#FDFCFB">
+                              编辑对话标题
+                            </Text>
+                          </Flex>
+                          <Flex w="100%" alignItems="center" gap="10px" p="10px" cursor="pointer" borderRadius="8px" _hover={{backgroundColor: '#FF840029'}} onClick={() => onDel(e)}>
+                            <Image src={IconDel} alt="" w="16px" h="px" objectFit="contain" />
+                            <Text fontSize="14px" fontFamily="PingFang SC" color="#FDFCFB">
+                              删除对话
+                            </Text>
+                          </Flex>
+                        </Popover.Body>
+                      </Popover.Content>
+                    </Popover.Positioner>
+                  </Portal>
+                </Popover.Root>
+              </Flex>
+            ))}
+          </Box>
         </VStack>
       </VStack>
       <DelDialog visible={visible} setVisible={(vis) => {setVisible(vis)}} onSureDel={onSureDel} />

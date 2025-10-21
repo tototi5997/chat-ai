@@ -4,14 +4,13 @@ import IconGlobe from "@/assets/icon-globe.png";
 import IconGlobeSvg from "@/assets/icon-globe.svg";
 import IconArrowUp from "@/assets/icon-arrow-up.png";
 import IconStop from "@/assets/icon-stop.png";
-import { useState, type ChangeEvent, useCallback } from "react";
+import { useState, type ChangeEvent, useCallback, useEffect } from "react";
 import { type newTalkInterface } from "@/types/customInterface";
 import { useNewChat, usePostRequestDemo } from "@/state";
-import { fetchWithSSE } from '@/api/sse'
-import { useQueryClient } from '@tanstack/react-query';
+// import { fetchWithSSE } from '@/api/sse'
 import { useUiStore } from "@/state/useUiStore";
+import { useStreamChat } from '@/api/hook';
 
-let cancelSSE
 export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => void }) {
   const [isDeepThink, setIsDeepThink] = useState<boolean>(false); // 是否开启深度思考
   const [question, setQuestion] = useState<string>(""); // 输入框数据
@@ -20,6 +19,7 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
   const isNewChat = useUiStore((state) => state.isNewChat);
   const setCurrentHistory = useUiStore((state) => state.setCurrentHistory);
   const setIsNewChat = useUiStore((state) => state.setIsNewChat);
+  const { messages, isLoading, error, processStream, stopStream } = useStreamChat();
 
   // get请求模拟
   const newChat = useNewChat();
@@ -67,18 +67,20 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
       e.preventDefault();
     }
   };
-
+  // 发送
   const onClickSendMessage = async () => {
     let chatId = ''
+    let originHistory
     if(isNewChat) {
       const newChatData = await newChat.mutateAsync({title: '智能体记录'})
-      setCurrentHistory({
-        ...newChatData,
+      originHistory = {
+        ...newChatData.data,
         messages: [{
           role: 'user',
           content: question
         }]
-      })
+      }
+      setCurrentHistory(originHistory)
       chatId = newChatData.data?.id
     } else {
       const newCurrentHistory = JSON.parse(JSON.stringify(currentHistory))
@@ -86,100 +88,28 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
         role: 'user',
         content: question
       })
+      originHistory = {...newCurrentHistory}
       setCurrentHistory({...newCurrentHistory})
       chatId = currentHistory.id
     }
-    
-    fetchWithSSE(`/api/chat/${chatId}/stream`, {
-      messages: [{
-        content: question,
-        name: '',
-        role: 'user'
-      }],
-      metadata: '',
-      user: ''
-    },
-      (res) => handleSSEMessage(res, currentHistory),
-      handleSSEError,
-      handleStreamStart,
-      handleStreamComplete
-    ).then(cancelFunc => {
-      cancelSSE = cancelFunc // 存储取消连接的函数
-      setIsNewChat(false)
-      setQuestion('')
-    })
-    .catch(error => {
-      console.error('Failed to start SSE connection:', error)
-    })
-  };
-
-  function handleSSEMessage(data, current) {
-    if (data.length && data.length > 0) {
-      console.log(current, 'currentHistory')
-      let newCurrentHistory = JSON.parse(JSON.stringify(current))
-      // if(!newCurrentHistory?.messages || !newCurrentHistory?.messages?.length) {
-      //   newCurrentHistory.messages = [{
-      //     role: 'user',
-      //     content: question
-      //   }, {
-      //     role: 'assistant',
-      //     content: ''
-      //   }]
-      // }
-      newCurrentHistory.messages.push(...data)
-      // 更新数据并触发组件重渲染
-      // const botIndex = newCurrentHistory.messages.length - 1
-      // const botMessage = newCurrentHistory.messages[botIndex]
-      // botMessage.content += data.map(item => item.data ? JSON.parse(item.data).reasoning_content : '').join('')
-      // botMessage.displayContent = formatContent(botMessage.content)
-      // newCurrentHistory.messages[botIndex] = botMessage
-      console.log(newCurrentHistory, 'newCurrentHistory')
-      setCurrentHistory({...newCurrentHistory})
-    }
-  }
-  function handleSSEError(error) {
-    // if (this.messages[this.messages.length - 1].content == '思考中...') {
-    //   this.messages[this.messages.length - 1].content = '服务器异常，请稍后再试'
-    // }
-    console.error('SSE Error:', error)
-  }
-  function handleStreamStart() {
-    console.log('Stream has started.')
-  }
-  function handleStreamComplete() {
-    console.log('Stream has completed.')
-    // const activeChat = this.chatHistory.find(chat => chat.id === this.activeChatId)
-    // const botIndex = activeChat.messages.length - 1
-    // const botMessage = activeChat.messages[botIndex]
-    // setQuestion('')
-    // // this.scrollToBottom()
-    // botMessage.isStreaming = false
-    // this.$set(activeChat.messages, botIndex, { ...botMessage })
-  }
-  function cancelConnection() {
-    if (cancelSSE) {
-      cancelSSE() // 调用取消连接的函数
-    }
-  }
-  function formatContent(text) {
-    // 阶段1基础转换
-    let formatted = text
-      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.+?)\*/g, '<em>$1</em>')
-      .replace(/^(\d+)\.\s(.+)/gm, '<li>$2</li>')
-      .replace(/^-\s(.+)/gm, '<li>• $1</li>')
-      .replace(/\n/g, '<br>')
-
-    // 阶段2结构优化
-    formatted = formatted
-      .replace(/(<li>.*?<\/li>)+/g, list => {
-        const isOrdered = list.startsWith('<li>1')
-        return isOrdered ? `<ol>${list}</ol>` : `<ul>${list}</ul>`
+    await processStream(`/api/chat/${chatId}/stream`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        messages: [{
+          content: question,
+          name: '',
+          role: 'user'
+        }],
+        metadata: '',
+        user: ''
       })
-      .replace(/<br><br>/g, '</p><p>')
-
-    return formatted
-  }
+    }, originHistory);
+    setIsNewChat(false)
+    setQuestion('')
+  };
   
   return (
     <Box w="80%" textAlign="center">

@@ -27,7 +27,7 @@ const WelcomeBanner = () => {
 export function ChatAI(props: { onAsking?: (talk: newTalkInterface) => void }) {
   const currentHistory = useUiStore((state) => state.currentHistory);
   const isNewChat = useUiStore((state) => state.isNewChat);
-  console.log(currentHistory, isNewChat, '????????????????')
+  
   return (
     <Box h="90vh" flex={1} mx={3} my={3} border="1px solid" borderColor="#423d3d" borderRadius="8px" bg="rgba(26, 21, 22, 0.6)">
       <Flex flexDir="column" align="center" justify="center" w="full" h="full" py={16} px={8}>

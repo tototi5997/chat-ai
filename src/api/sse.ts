@@ -27,6 +27,7 @@ export function fetchWithSSE(url:string, params = {}, onMessage: (func: any) => 
       // 检查是否为流式响应
       const reader = response.body?.getReader()
       const decoder = new TextDecoder('utf-8')
+      let allData:any = null
 
       function read() {
         reader?.read()
@@ -93,7 +94,13 @@ export function fetchWithSSE(url:string, params = {}, onMessage: (func: any) => 
             const chunk = decoder.decode(value, { stream: true })
             if (chunk.startsWith('data:')) {
               try {
-                onMessage(parseSSEStream(chunk))
+                const currentData = parseSSEStream(chunk)
+                if(!allData) {
+                  allData = currentData
+                } else {
+                  allData = allData.concat(currentData)
+                }
+                onMessage(allData)
               } catch (error) {
                 console.error('Failed to parse SSE message:', error)
               }
