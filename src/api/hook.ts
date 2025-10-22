@@ -8,7 +8,7 @@ interface StreamMessage {
   tool_call_id?: string;
 }
 export function parseString(str) {
-  if(str.includes('\"')) {
+  if((str.startsWith('\"') && str.endsWith('\"')) || (str.startsWith('{\"') && str.endsWith('\"}'))) {
     return JSON.parse(str)
   }
   if(str === "null") {
@@ -124,7 +124,7 @@ export const useStreamChat = () => {
                   ]
                   setCurrentHistory({...newCurrentHistory})
                   // 设置历史数据
-                  let newHisMsg = history[currentHistory.id].messages
+                  let newHisMsg = history[currentHistory.id]?.messages || []
                   newHisMsg = newHisMsg.concat(newCurrentHistory.messages)
                   setHistory({
                     ...history,

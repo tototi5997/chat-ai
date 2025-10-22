@@ -113,7 +113,7 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
   
   return (
     <Box w="80%" textAlign="center">
-      {currentHistory?.content ? (
+      {currentHistory?.messages ? (
         <></>
       ) : (
         <Text fontSize="48px" fontWeight="bold" fontFamily="'Rajdhani', sans-serif" color="#fdfcfb" mb="30px">

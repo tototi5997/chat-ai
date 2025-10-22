@@ -6,16 +6,15 @@ import { Typewriter } from './Typewriter.tsx';
 
 export default function ChatContent() {
   const currentHistory = useUiStore((state) => state.currentHistory);
-  console.log(currentHistory, 'currentHistory')
   function formatContent(text:string) {
 
     // 阶段1基础转换
     let formatted = text
-      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.+?)\*/g, '<em>$1</em>')
-      .replace(/^(\d+)\.\s(.+)/gm, '<li>$2</li>')
-      .replace(/^-\s(.+)/gm, '<li>• $1</li>')
-      .replace(/\\n/g, '<br>')
+      // .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      // .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      // .replace(/^(\d+)\.\s(.+)/gm, '<li>$2</li>')
+      // .replace(/^-\s(.+)/gm, '<li>• $1</li>')
+      // .replace(/\\n/g, '<br>')
 
     // 阶段2结构优化
     // formatted = formatted
@@ -31,35 +30,35 @@ export default function ChatContent() {
   const renderMessageContent = (message: StreamMessage) => {
     if (message.role === 'assistant') {
       return (
-        <div className="message assistant-message">
+        <Box className="message assistant-message">
           {message.reasoning_content && (
-            <div className="reasoning">
-              <strong>思考过程:</strong>
+            <Box className="reasoning">
+              <Box>思考过程:</Box>
               <Typewriter text={formatContent(message.reasoning_content)} speed={20} />
-            </div>
+            </Box>
           )}
           {message.content && (
-            <div className="content">
+            <Box className="content">
               <Typewriter text={formatContent(message.content)} speed={30} />
-            </div>
+            </Box>
           )}
-        </div>
+        </Box>
       );
     }
-
     if (message.role === 'tool') {
       try {
         const toolContent = JSON.parse(message.content || '{}');
+
         return (
-          <div className="message tool-message">
-            <strong>工具调用:</strong> {toolContent.function_call}
-            {toolContent.function_result?.file_url && (
-              <div>文件: {toolContent.function_result.file_url}</div>
-            )}
-          </div>
+          <Box className="message tool-message">
+            <Box>工具调用: {toolContent.function_call}</Box> 
+            {toolContent.function_result?.file_url ? (
+              <Box>文件: {toolContent.function_result?.file_url}</Box>
+            ) : <></>}
+          </Box>
         );
       } catch {
-        return <div>工具调用结果解析失败</div>;
+        // return <div>工具调用结果解析失败</div>;
       }
     }
 
@@ -67,7 +66,7 @@ export default function ChatContent() {
   };
   return (
     <Box width="80%" overflow="auto">
-      {(currentHistory.messages || []).map((e: any, i: number) => (
+      {(currentHistory.messages || []).filter(e => !!e.content).map((e: any, i: number) => (
         <Box
           key={i}
           width="80%"
@@ -79,16 +78,16 @@ export default function ChatContent() {
           p="10px"
           color="#FDFCFB"
         >
-          {e.role === "assistant" && currentHistory.messages[i-1].role !== 'assistant' ? (
+          {e.role !== "user" && currentHistory.messages[i-1].role === 'user' ? (
             <Box position="relative" w="32px" h="42px">
               <Image src={Ellipse} alt="Chat AI logo" w="full" h="full" objectFit="contain" />
             </Box>
           ) : (
-            <></>
+            <Box w="32px"></Box>
           )}
-          {e.role === "assistant" ? <Text w={e.role === "assistant" ? "calc(100% - 42px)" : "100%"} pt={e.role === "assistant" ? "8px" : ""}>
+          {e.role !== "user" ? <Box w={e.role !== "user" ? "calc(100% - 42px)" : "100%"} pt={e.role !== "user" ? "8px" : ""}>
             {renderMessageContent(e)}
-          </Text> : <Text>{e.content}</Text>}
+          </Box> : <Text>{e.content}</Text>}
         </Box>
       ))}
     </Box>
