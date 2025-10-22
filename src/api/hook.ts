@@ -7,10 +7,21 @@ interface StreamMessage {
   reasoning_content?: string;
   tool_call_id?: string;
 }
+export function parseString(str) {
+  if(str.includes('\"')) {
+    return JSON.parse(str)
+  }
+  if(str === "null") {
+    return ''
+  }
+  return str
+}
 
 export const useStreamChat = () => {
   const currentHistory = useUiStore((state) => state.currentHistory);
   const setCurrentHistory = useUiStore((state) => state.setCurrentHistory);
+  const history = useUiStore((state) => state.history);
+  const setHistory = useUiStore((state) => state.setHistory);
   const [messages, setMessages] = useState<StreamMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -82,16 +93,22 @@ export const useStreamChat = () => {
                     if (parsedData.content) {
                       newMessages[existingIndex] = {
                         ...existing,
-                        content: (existing.content || '') + (parsedData.content || '')
+                        content: (existing.content || '') + parseString(parsedData.content)
                       };
                     }
                     if (parsedData.reasoning_content) {
                       newMessages[existingIndex] = {
                         ...existing,
-                        reasoning_content: (existing.reasoning_content || '') + (parsedData.reasoning_content || '')
+                        reasoning_content: (existing.reasoning_content || '') + parseString(parsedData.reasoning_content)
                       };
                     }
                   } else {
+                    if (parsedData.content) {
+                      parsedData.content = parseString(parsedData.content)
+                    }
+                    if (parsedData.reasoning_content) {
+                      parsedData.reasoning_content = parseString(parsedData.reasoning_content)
+                    }
                     // 添加新消息
                     newMessages.push(parsedData);
                   }
@@ -106,6 +123,16 @@ export const useStreamChat = () => {
                     ...newMessages
                   ]
                   setCurrentHistory({...newCurrentHistory})
+                  // 设置历史数据
+                  let newHisMsg = history[currentHistory.id].messages
+                  newHisMsg = newHisMsg.concat(newCurrentHistory.messages)
+                  setHistory({
+                    ...history,
+                    [currentHistory.id]: {
+                      ...history[currentHistory.id],
+                      messages: newHisMsg
+                    }
+                  })
                 }
                 return newMessages;
               });

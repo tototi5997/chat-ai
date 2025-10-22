@@ -22,7 +22,7 @@ export const useUiStore = create<UiState>((set) => ({
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
   setSidebarOpen: (open) => set({ sidebarOpen: open }),
   setIsNewChat: (flag) => set({ isNewChat: flag }),
-  setCurrentHistory: (data:any) => set((state) => ({ ...state, currentHistory: {...data} })),
+  setCurrentHistory: (data:any) => set(() => ({ currentHistory: data })),
   setHistory: (data:any) => set(() => ({ history: {
     ...history,
     ...data

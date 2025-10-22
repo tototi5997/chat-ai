@@ -11,6 +11,7 @@ import { type newTalkInterface, type contentInterface } from '@/types/customInte
 import { useQueryClient } from '@tanstack/react-query';
 import { useChatList, useUpdateChatTitle, useDelChat, useGetChatInfo } from "@/state";
 import { useUiStore } from "@/state/useUiStore";
+import { parseString } from '@/api/hook'
 
 interface historyObj {
   id: string;
@@ -83,7 +84,11 @@ const Slider = (props: { newQuestion: newTalkInterface|null }) => {
       const res = await getChatInfo.mutateAsync(e.id)
       setCurrentHistory({
         ...e,
-        messages: res.data.messages || []
+        messages: (res.data.messages || []).map(x => ({
+          ...x,
+          ...(x.content ? parseString(x.content) : {}),
+          ...(x.reasoning_content ? parseString(x.reasoning_content) : {}),
+        }))
       })
       setHistory({
         ...history,
@@ -92,7 +97,11 @@ const Slider = (props: { newQuestion: newTalkInterface|null }) => {
     } else {
       setCurrentHistory({
         ...e,
-        messages: history[e.id].messages || []
+        messages: (history[e.id].messages || []).map(x => ({
+          ...x,
+          ...(x.content ? parseString(x.content) : {}),
+          ...(x.reasoning_content ? parseString(x.reasoning_content) : {}),
+        }))
       })
     }
     setIsNewChat(false)

@@ -6,8 +6,9 @@ import { Typewriter } from './Typewriter.tsx';
 
 export default function ChatContent() {
   const currentHistory = useUiStore((state) => state.currentHistory);
-
+  console.log(currentHistory, 'currentHistory')
   function formatContent(text:string) {
+
     // 阶段1基础转换
     let formatted = text
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
@@ -15,22 +16,19 @@ export default function ChatContent() {
       .replace(/^(\d+)\.\s(.+)/gm, '<li>$2</li>')
       .replace(/^-\s(.+)/gm, '<li>• $1</li>')
       .replace(/\\n/g, '<br>')
-      .replace(/"/g, '')
-      .replace(/null/g, '')
 
     // 阶段2结构优化
-    formatted = formatted
-      .replace(/(<li>.*?<\/li>)+/g, list => {
-        const isOrdered = list.startsWith('<li>1')
-        return isOrdered ? `<ol>${list}</ol>` : `<ul>${list}</ul>`
-      })
-      .replace(/<br><br>/g, '</p><p>')
+    // formatted = formatted
+    //   .replace(/(<li>.*?<\/li>)+/g, list => {
+    //     const isOrdered = list.startsWith('<li>1')
+    //     return isOrdered ? `<ol>${list}</ol>` : `<ul>${list}</ul>`
+    //   })
+    // .replace(/<br><br>/g, '</p><p>')
 
     return formatted
   }
   // 渲染消息内容
   const renderMessageContent = (message: StreamMessage) => {
-    console.log(message, 'messagemessage')
     if (message.role === 'assistant') {
       return (
         <div className="message assistant-message">
