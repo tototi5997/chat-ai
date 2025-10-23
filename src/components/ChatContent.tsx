@@ -1,11 +1,16 @@
-import { Box, Image, Text } from "@chakra-ui/react";
-import { type contentInterface } from "@/types/customInterface";
+import { Box, Image, Text, Link } from "@chakra-ui/react";
 import Ellipse from "@/assets/ellipse.png";
 import { useUiStore } from "@/state/useUiStore";
 import { Typewriter } from './Typewriter.tsx';
+import { baseUrl } from '../../config.ts'
+import { useEffect, useRef } from "react";
+import { type StreamMessage } from '@/api/hook'
 
 export default function ChatContent() {
   const currentHistory = useUiStore((state) => state.currentHistory);
+  const needScroll = useUiStore((state) => state.needScroll);
+  const chatRef = useRef<HTMLElement>(null)
+
   function formatContent(text:string) {
 
     // 阶段1基础转换
@@ -26,6 +31,37 @@ export default function ChatContent() {
 
     return formatted
   }
+  useEffect(() => {
+    if(needScroll) {
+      stickToBottom()
+    }
+  }, [needScroll])
+
+  // 判断在最底部才继续黏贴在底部滚动
+  const stickToBottom = () => {
+    const scrollEl = chatRef.current!;
+    if (!scrollEl) return;
+    
+    // 记录当前滚动状态
+    const currentScrollTop = scrollEl.scrollTop;
+    const currentMaxScroll = scrollEl.scrollHeight - scrollEl.clientHeight;
+    // 判断是否已经到底部（允许1px误差）
+    const isAtBottom = currentScrollTop >= currentMaxScroll - 100;
+  
+    if (!scrollEl) return;
+    
+    const newMaxScroll = scrollEl.scrollHeight - scrollEl.clientHeight;
+    scrollEl.scrollTo({
+      top: newMaxScroll
+    })
+    // 只有当前在底部时才滚动
+    if (isAtBottom) {
+      // scrollEl.scrollTop = newMaxScroll;
+    } else {
+      // console.log('未到达底部，不滚动')
+    }
+  }
+
   // 渲染消息内容
   const renderMessageContent = (message: StreamMessage) => {
     if (message.role === 'assistant') {
@@ -53,7 +89,9 @@ export default function ChatContent() {
           <Box className="message tool-message">
             <Box>工具调用: {toolContent.function_call}</Box> 
             {toolContent.function_result?.file_url ? (
-              <Box>文件: {toolContent.function_result?.file_url}</Box>
+              <Box>文件:  
+                <Link href={`${baseUrl}/download/${toolContent.function_result?.file_url}`} color='#1188d6' title="点击下载"> {toolContent.function_result?.file_url}</Link>
+              </Box>
             ) : <></>}
           </Box>
         );
@@ -65,8 +103,8 @@ export default function ChatContent() {
     return null;
   };
   return (
-    <Box width="80%" overflow="auto">
-      {(currentHistory.messages || []).filter(e => !!e.content).map((e: any, i: number) => (
+    <Box ref={chatRef} width="80%" overflow="auto">
+      {(currentHistory.messages || []).map((e: any, i: number) => (
         <Box
           key={i}
           width="80%"

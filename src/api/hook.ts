@@ -1,13 +1,13 @@
 import { useState, useRef, useCallback } from 'react';
 import { useUiStore } from "@/state/useUiStore";
 
-interface StreamMessage {
-  role: 'assistant' | 'tool';
+export interface StreamMessage {
+  role: 'assistant' | 'tool' | 'user';
   content?: string;
   reasoning_content?: string;
   tool_call_id?: string;
 }
-export function parseString(str) {
+export function parseString(str:string) {
   if((str.startsWith('\"') && str.endsWith('\"')) || (str.startsWith('{\"') && str.endsWith('\"}'))) {
     return JSON.parse(str)
   }
@@ -22,6 +22,7 @@ export const useStreamChat = () => {
   const setCurrentHistory = useUiStore((state) => state.setCurrentHistory);
   const history = useUiStore((state) => state.history);
   const setHistory = useUiStore((state) => state.setHistory);
+  const setNeedScroll = useUiStore((state) => state.setNeedScroll);
   const [messages, setMessages] = useState<StreamMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -56,6 +57,7 @@ export const useStreamChat = () => {
 
       while (true) {
         const { done, value } = await reader.read();
+        setNeedScroll(true)
         
         if (done) break;
 
@@ -133,6 +135,7 @@ export const useStreamChat = () => {
                       messages: newHisMsg
                     }
                   })
+                  setNeedScroll(false)
                 }
                 return newMessages;
               });

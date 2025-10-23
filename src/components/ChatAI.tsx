@@ -1,10 +1,7 @@
 import { Box, Center, Image, Text, VStack, Flex } from "@chakra-ui/react";
 import Ellipse from "@/assets/ellipse.png";
 import { NewChat } from "./NewChat";
-import { type newTalkInterface } from "@/types/customInterface";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 import ChatContent from "./ChatContent";
-import ZustandUsageExample from "./ZustandUsageExample";
 import { useUiStore } from "@/state/useUiStore";
 
 const WelcomeBanner = () => {
@@ -18,13 +15,12 @@ const WelcomeBanner = () => {
         <Text textStyle="h7" maxW="480px">
           我可以帮你分析目标地址的资金情况，你可以简单描述你的追踪需求，例如目标地址、目标链、追踪Token与追踪时间范围等。
         </Text>
-        {/* <ZustandUsageExample /> */}
       </VStack>
     </VStack>
   );
 };
 
-export function ChatAI(props: { onAsking?: (talk: newTalkInterface) => void }) {
+export function ChatAI() {
   const currentHistory = useUiStore((state) => state.currentHistory);
   const isNewChat = useUiStore((state) => state.isNewChat);
   
@@ -34,7 +30,7 @@ export function ChatAI(props: { onAsking?: (talk: newTalkInterface) => void }) {
         {isNewChat || currentHistory.messages ? (
           <>
             <ChatContent />
-            <NewChat onAsking={($event) => props.onAsking?.($event)} />
+            <NewChat />
           </>
         ) : (
           <WelcomeBanner />

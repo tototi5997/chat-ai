@@ -5,13 +5,13 @@ import IconGlobeSvg from "@/assets/icon-globe.svg";
 import IconArrowUp from "@/assets/icon-arrow-up.png";
 import IconStop from "@/assets/icon-stop.png";
 import { useState, type ChangeEvent, useCallback, useEffect } from "react";
-import { type newTalkInterface } from "@/types/customInterface";
-import { useNewChat, usePostRequestDemo } from "@/state";
+import { useNewChat, useChatList } from "@/state";
 // import { fetchWithSSE } from '@/api/sse'
 import { useUiStore } from "@/state/useUiStore";
 import { useStreamChat } from '@/api/hook';
+import { useQueryClient } from '@tanstack/react-query';
 
-export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => void }) {
+export function NewChat() {
   const [isDeepThink, setIsDeepThink] = useState<boolean>(false); // 是否开启深度思考
   const [question, setQuestion] = useState<string>(""); // 输入框数据
 
@@ -20,13 +20,13 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
   const setCurrentHistory = useUiStore((state) => state.setCurrentHistory);
   const setIsNewChat = useUiStore((state) => state.setIsNewChat);
   const { messages, isLoading, error, processStream, stopStream } = useStreamChat();
+  const [isPending, setIsPending] = useState(false)
+  const queryClient = useQueryClient();
+  // 历史聊天记录列表
+  const { data: chatList = [] } = useChatList();
 
   // get请求模拟
   const newChat = useNewChat();
-
-  const mockPostFunc = usePostRequestDemo();
-
-  const isAiPendding = mockPostFunc.isPending;
 
   const fileUpload = useFileUpload({
     maxFiles: 10,
@@ -69,6 +69,11 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
   };
   // 发送
   const onClickSendMessage = async () => {
+    if(isPending) {
+      stopStream()
+      setIsPending(false)
+      return
+    }
     let chatId = ''
     let originHistory
     if(isNewChat) {
@@ -81,6 +86,9 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
         }]
       }
       setCurrentHistory(originHistory)
+      const newChatListData = chatList
+      newChatListData.push(newChatData.data)
+      queryClient.setQueryData(['chat_list'], newChatListData)
       chatId = newChatData.data?.id
     } else {
       const newCurrentHistory = JSON.parse(JSON.stringify(currentHistory))
@@ -92,6 +100,7 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
       setCurrentHistory({...newCurrentHistory})
       chatId = currentHistory.id
     }
+    setIsPending(true)
     await processStream(`/api/chat/${chatId}/stream`, {
       method: 'POST',
       headers: {
@@ -109,6 +118,7 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
     }, originHistory);
     setIsNewChat(false)
     setQuestion('')
+    setIsPending(false)
   };
   
   return (
@@ -227,16 +237,16 @@ export function NewChat({ onAsking }: { onAsking: (talk: newTalkInterface) => vo
               w="28px"
               h="28px"
               borderRadius="28px"
-              cursor={question.trim() || isAiPendding || accepted.length ? "pointer" : "not-allowed"}
-              backgroundColor={question.trim() || isAiPendding || accepted.length ? "#ffdfdfff" : "#808080"}
+              cursor={question.trim() || isPending || accepted.length ? "pointer" : "not-allowed"}
+              backgroundColor={question.trim() || isPending || accepted.length ? "#ffdfdfff" : "#808080"}
               justifyContent="center"
               alignItems="center"
               onClick={onClickSendMessage}
               aria-label="发送消息"
-              opacity={question.trim() || isAiPendding || accepted.length ? 1 : 0.6}
+              opacity={question.trim() || isPending || accepted.length ? 1 : 0.6}
               transition="all 0.2s ease"
             >
-              <Image src={isAiPendding ? IconStop : IconArrowUp} alt="" w="full" h="full" objectFit="contain" />
+              <Image src={isPending ? IconStop : IconArrowUp} alt="" w="full" h="full" objectFit="contain" />
             </Flex>
           </HStack>
         </Box>

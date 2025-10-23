@@ -7,21 +7,20 @@ import IconDel from "@/assets/icon-del.png";
 import { useEffect, useState } from "react";
 import EditInput from "./EditInput";
 import DelDialog from "./DelDialog";
-import { type newTalkInterface, type contentInterface } from '@/types/customInterface'
+import { type contentInterface } from '@/types/customInterface'
 import { useQueryClient } from '@tanstack/react-query';
 import { useChatList, useUpdateChatTitle, useDelChat, useGetChatInfo } from "@/state";
 import { useUiStore } from "@/state/useUiStore";
-import { parseString } from '@/api/hook'
+import { parseString, type StreamMessage } from '@/api/hook'
 
 interface historyObj {
   id: string;
-  label: string;
+  title: string;
   content?: contentInterface;
   created_at?: string;
   updated_at?: string;
 }
-const Slider = (props: { newQuestion: newTalkInterface|null }) => {
-  const [current, setCurrent] = useState('')
+const Slider = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [editData, setEditData] = useState<historyObj | null>()
   const [delData, setDelData] = useState<historyObj | null>()
@@ -33,37 +32,13 @@ const Slider = (props: { newQuestion: newTalkInterface|null }) => {
   const setIsNewChat = useUiStore((state) => state.setIsNewChat);
   const history = useUiStore((state) => state.history);
   const setHistory = useUiStore((state) => state.setHistory);
+  const currentId = useUiStore((state) => state.currentId);
+  const setCurrent = useUiStore((state) => state.setCurrent);
   // 历史聊天记录列表
   const { data: chatList = [] } = useChatList();
   const updateChatTitle = useUpdateChatTitle();
   const delChat = useDelChat();
   const getChatInfo = useGetChatInfo();
-
-  useEffect(() => {
-    if(props.newQuestion) {
-      if(!current) {
-        const newHistory:any = [props.newQuestion, ...chatList]
-        queryClient.setQueryData(['chat_list'], newHistory);
-        setCurrent(props.newQuestion.id)
-        setCurrentHistory(props.newQuestion)
-        // 更新数据并触发组件重渲染
-      } else {
-        const newHistory:any = chatList.map((e:historyObj) => {
-          if(e.id === props.newQuestion?.id) {
-            const newItem = {
-              ...e,
-              content: e.content?.concat(props.newQuestion?.content)
-            }
-            setCurrentHistory(newItem)
-            return newItem
-          } else {
-            return e
-          }
-        })
-        queryClient.setQueryData(['chat_list'], newHistory);
-      }
-    }
-  }, [props.newQuestion, props.newQuestion?.content])
 
   // 点击侧边栏选项
   const onTabClick = (type:string) => {
@@ -84,7 +59,7 @@ const Slider = (props: { newQuestion: newTalkInterface|null }) => {
       const res = await getChatInfo.mutateAsync(e.id)
       setCurrentHistory({
         ...e,
-        messages: (res.data.messages || []).map(x => ({
+        messages: (res.data.messages || []).map((x:StreamMessage) => ({
           ...x,
           ...(x.content ? parseString(x.content) : {}),
           ...(x.reasoning_content ? parseString(x.reasoning_content) : {}),
@@ -97,7 +72,7 @@ const Slider = (props: { newQuestion: newTalkInterface|null }) => {
     } else {
       setCurrentHistory({
         ...e,
-        messages: (history[e.id].messages || []).map(x => ({
+        messages: (history[e.id].messages || []).map((x:StreamMessage) => ({
           ...x,
           ...(x.content ? parseString(x.content) : {}),
           ...(x.reasoning_content ? parseString(x.reasoning_content) : {}),
@@ -110,7 +85,7 @@ const Slider = (props: { newQuestion: newTalkInterface|null }) => {
   const onEdit = (e:historyObj) => {
     setIsOpen(false)
     setEditData(e)
-    setInputValue(e.label)
+    setInputValue(e.title)
   }
   // 删除
   const onDel = async (e:historyObj) => {
@@ -126,7 +101,7 @@ const Slider = (props: { newQuestion: newTalkInterface|null }) => {
       if(item.id === e.id) {
         return {
           ...e,
-          label: value
+          title: value
         }
       } else {
         return e
@@ -198,11 +173,11 @@ const Slider = (props: { newQuestion: newTalkInterface|null }) => {
           </HStack>
           <Box w="100%" maxH="800px" overflow="auto" _scrollbar={{display: 'none'}}>
             {chatList.map((e:historyObj) => (
-              <Flex key={e.id} w="100%" justify="space-between" alignItems="center" p="10px" cursor="pointer" borderRadius="8px" _hover={{backgroundColor: '#FFFFFF1A'}} backgroundColor={current === e.id ? '#FFFFFF1A' : ''} onClick={() => onHistoryClick(e)}>
+              <Flex key={e.id} w="100%" justify="space-between" alignItems="center" p="10px" cursor="pointer" borderRadius="8px" _hover={{backgroundColor: '#FFFFFF1A'}} backgroundColor={currentId === e.id ? '#FFFFFF1A' : ''} onClick={() => onHistoryClick(e)}>
                 {editData?.id === e.id ? <EditInput value={inputValue} onChange={(value) => inputChange(value, e)} /> :<Text fontSize="14px" fontFamily="PingFang SC" color="#FDFCFB">
-                  {e.label}
+                  {e.title}
                 </Text>}
-                <Popover.Root open={isOpen && e.id === current} key={e.id}>
+                <Popover.Root open={isOpen && e.id === currentId} key={e.id}>
                   <Popover.Trigger asChild w="16px" h="16px" borderRadius="16px" _hover={{backgroundColor: '#48414199'}}>
                     <Image src={IconMore} alt="" w="full" h="full" objectFit="contain" onClick={($event) => {$event.stopPropagation(); setCurrent(e.id); setIsOpen(!isOpen)}} />
                   </Popover.Trigger>
