@@ -63,11 +63,18 @@ const Slider = () => {
           ...x,
           ...(x.content ? parseString(x.content) : {}),
           ...(x.reasoning_content ? parseString(x.reasoning_content) : {}),
+          isHistory: true
         }))
       })
       setHistory({
         ...history,
-        [e.id]: res.data
+        [e.id]: {
+          ...(res.data || {}),
+          messages: (res.data.messages || []).map((y:StreamMessage) => ({
+            ...y,
+            isHistory: true
+          }))
+        }
       })
     } else {
       setCurrentHistory({
@@ -76,6 +83,7 @@ const Slider = () => {
           ...x,
           ...(x.content ? parseString(x.content) : {}),
           ...(x.reasoning_content ? parseString(x.reasoning_content) : {}),
+          isHistory: true
         }))
       })
     }

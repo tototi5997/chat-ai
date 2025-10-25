@@ -2,10 +2,12 @@ import { useState, useRef, useCallback } from 'react';
 import { useUiStore } from "@/state/useUiStore";
 
 export interface StreamMessage {
+  id: string;
   role: 'assistant' | 'tool' | 'user';
   content?: string;
   reasoning_content?: string;
   tool_call_id?: string;
+  isHistory?: boolean
 }
 export function parseString(str:string) {
   if((str.startsWith('\"') && str.endsWith('\"')) || (str.startsWith('{\"') && str.endsWith('\"}'))) {
@@ -73,6 +75,16 @@ export const useStreamChat = () => {
             
             if (data === '[DONE]') {
               setIsLoading(false);
+              setHistory({
+                ...history,
+                [currentHistory.id]: {
+                  ...history[currentHistory.id],
+                  messages: history[currentHistory.id].messages.map((x:StreamMessage) => ({
+                    ...x,
+                    isHistory: true
+                  }))
+                }
+              })
               return;
             }
 
