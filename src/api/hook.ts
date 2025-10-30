@@ -79,7 +79,7 @@ export const useStreamChat = () => {
                 ...history,
                 [currentHistory.id]: {
                   ...history[currentHistory.id],
-                  messages: history[currentHistory.id].messages.map((x:StreamMessage) => ({
+                  messages: history[currentHistory.id]?.messages.map((x:StreamMessage) => ({
                     ...x,
                     isHistory: true
                   }))

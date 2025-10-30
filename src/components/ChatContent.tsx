@@ -78,7 +78,7 @@ export default function ChatContent() {
               <Typewriter text={message.reasoning_content} speed={20} isHistory={message.isHistory} onComplete={() => onReasoningEnd(message, index)} />
             </Collapsible.Content>
           </Collapsible.Root>}
-          {(currentHistory.messages[index-1].reasoning_content ? reasoning[message.id || `${index-1}`] : true) && (
+          {(
             <Box className="content">
               <Typewriter text={message.content||''} speed={30} isHistory={message.isHistory} />
             </Box>

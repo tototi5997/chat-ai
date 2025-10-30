@@ -10,11 +10,12 @@ interface TypewriterProps {
 
 export const Typewriter: React.FC<TypewriterProps> = ({ 
   text, 
-  speed = 10,
+  speed = 5,
   isHistory = false,
   onComplete 
 }) => {
   const [displayedText, setDisplayedText] = useState('');
+  const [currentIndex, setCurrentIndex] = useState(0)
 
   function formatContent(text:string) {
 
@@ -37,26 +38,29 @@ export const Typewriter: React.FC<TypewriterProps> = ({
     return formatted
   }
 
-  useEffect(() => {
-    // setDisplayedText(''); // 重置文本
-    if(isHistory) {
-      setDisplayedText(text)
-      return
-    }
+  // useEffect(() => {
+  //   if(isHistory) {
+  //     setDisplayedText(text)
+  //     return
+  //   }
+  //   // setDisplayedText(''); // 重置文本
     
-    let currentIndex = 0;
-    const timer = setInterval(() => {
-      if (currentIndex < text.length) {
-        setDisplayedText(prev => prev + (text[currentIndex] || ''));
-        currentIndex++;
-      } else {
-        clearInterval(timer);
-        onComplete?.();
-      }
-    }, speed);
+  //   let cI = 0;
+  //   console.log(text, currentIndex, '???text')
+  //   setCurrentIndex(currentIndex + 1)
+  //   const timer = setInterval(() => {
+  //     if (currentIndex < text.length) {
+  //       setDisplayedText(prev => (text || '').slice(0, cI));
+  //       cI++;
+  //       setCurrentIndex(cI)
+  //     } else {
+  //       clearInterval(timer);
+  //       onComplete?.();
+  //     }
+  //   }, speed);
 
-    return () => clearInterval(timer);
-  }, [text, speed]);
+  //   return () => clearInterval(timer);
+  // }, [text, speed]);
 
-  return <div dangerouslySetInnerHTML={{__html: formatContent(displayedText)}}></div>;
+  return <div dangerouslySetInnerHTML={{__html: formatContent(text)}}></div>;
 };
