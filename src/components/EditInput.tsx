@@ -12,5 +12,5 @@ export default function EditInput(props: {value: string, onChange: (value:string
   const onInput = (e:ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target?.value)
   }
-  return <Input ref={inputRef} value={inputValue} onChange={onInput} onBlur={() => props.onChange(inputValue)}></Input>
+  return <Input ref={inputRef} value={inputValue} onChange={onInput} onBlur={() => props.onChange(inputValue)} onKeyUp={(evt) => evt.key === 'Enter' && props.onChange(inputValue)}></Input>
 }

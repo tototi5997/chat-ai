@@ -25,8 +25,10 @@ export const useStreamChat = () => {
   const history = useUiStore((state) => state.history);
   const setHistory = useUiStore((state) => state.setHistory);
   const setNeedScroll = useUiStore((state) => state.setNeedScroll);
+  const isLoading = useUiStore((state) => state.isLoading);
+  const setIsLoading = useUiStore((state) => state.setIsLoading);
   const [messages, setMessages] = useState<StreamMessage[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  // const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -169,8 +171,8 @@ export const useStreamChat = () => {
 
   const stopStream = useCallback(() => {
     if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-      setIsLoading(false);
+      // abortControllerRef.current.abort();
+      // setIsLoading(false);
     }
   }, []);
 

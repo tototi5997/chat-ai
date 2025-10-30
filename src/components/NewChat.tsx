@@ -16,11 +16,13 @@ export function NewChat() {
   const [question, setQuestion] = useState<string>(""); // 输入框数据
 
   const currentHistory = useUiStore((state) => state.currentHistory);
+  const setCurrent = useUiStore((state) => state.setCurrent);
+  const isLoading = useUiStore((state) => state.isLoading);
   const isNewChat = useUiStore((state) => state.isNewChat);
   const setCurrentHistory = useUiStore((state) => state.setCurrentHistory);
   const setIsNewChat = useUiStore((state) => state.setIsNewChat);
-  const { messages, isLoading, error, processStream, stopStream } = useStreamChat();
-  const [isPending, setIsPending] = useState(false)
+  const { processStream, stopStream } = useStreamChat();
+  // const [isLoading, setIsPending] = useState(false)
   const queryClient = useQueryClient();
   // 历史聊天记录列表
   const { data: chatList = [] } = useChatList();
@@ -65,13 +67,14 @@ export function NewChat() {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
+      onClickSendMessage()
     }
   };
   // 发送
   const onClickSendMessage = async () => {
-    if(isPending) {
-      stopStream()
-      setIsPending(false)
+    if(isLoading || !question.trim()) {
+      // stopStream()
+      // setIsPending(false)
       return
     }
     let chatId = ''
@@ -90,6 +93,7 @@ export function NewChat() {
       newChatListData.push(newChatData.data)
       queryClient.setQueryData(['chat_list'], newChatListData)
       chatId = newChatData.data?.id
+      setCurrent(chatId || '')
     } else {
       const newCurrentHistory = JSON.parse(JSON.stringify(currentHistory))
       newCurrentHistory.messages.push({
@@ -100,7 +104,7 @@ export function NewChat() {
       setCurrentHistory({...newCurrentHistory})
       chatId = currentHistory.id
     }
-    setIsPending(true)
+    // setIsPending(true)
     await processStream(`/api/chat/${chatId}/stream`, {
       method: 'POST',
       headers: {
@@ -118,7 +122,7 @@ export function NewChat() {
     }, originHistory);
     setIsNewChat(false)
     setQuestion('')
-    setIsPending(false)
+    // setIsPending(false)
   };
   
   return (
@@ -237,16 +241,17 @@ export function NewChat() {
               w="28px"
               h="28px"
               borderRadius="28px"
-              cursor={question.trim() || isPending || accepted.length ? "pointer" : "not-allowed"}
-              backgroundColor={question.trim() || isPending || accepted.length ? "#ffdfdfff" : "#808080"}
+              cursor={question.trim() || isLoading || accepted.length ? "pointer" : "not-allowed"}
+              backgroundColor={question.trim() || isLoading || accepted.length ? "#ffdfdfff" : "#808080"}
               justifyContent="center"
               alignItems="center"
               onClick={onClickSendMessage}
               aria-label="发送消息"
-              opacity={question.trim() || isPending || accepted.length ? 1 : 0.6}
+              opacity={question.trim() || isLoading || accepted.length ? 1 : 0.6}
               transition="all 0.2s ease"
             >
-              <Image src={isPending ? IconStop : IconArrowUp} alt="" w="full" h="full" objectFit="contain" />
+              {/* isLoading ? IconStop : */}
+              <Image src={IconArrowUp} alt="" w="full" h="full" objectFit="contain" />
             </Flex>
           </HStack>
         </Box>

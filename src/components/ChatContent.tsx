@@ -10,6 +10,7 @@ import Arrow from "@/assets/arrow.svg";
 export default function ChatContent() {
   const currentHistory = useUiStore((state) => state.currentHistory);
   const needScroll = useUiStore((state) => state.needScroll);
+  const isLoading = useUiStore((state) => state.isLoading);
   const chatRef = useRef<HTMLElement>(null)
   const [open, setOpen] = useState(false)
   const [reasoning, setReasoning] = useState<any>({})
@@ -78,8 +79,7 @@ export default function ChatContent() {
               <Typewriter text={message.reasoning_content} speed={20} isHistory={message.isHistory} onComplete={() => onReasoningEnd(message, index)} />
             </Collapsible.Content>
           </Collapsible.Root>}
-          {(
-            <Box className="content">
+          {((currentHistory.messages[index-1].reasoning_content ? reasoning[message.id || `${index-1}`] : true) && <Box className="content">
               <Typewriter text={message.content||''} speed={30} isHistory={message.isHistory} />
             </Box>
           )}
@@ -122,14 +122,14 @@ export default function ChatContent() {
           color="#FDFCFB"
         >
           {e.role !== "user" && currentHistory.messages[i-1].role === 'user' ? (
-            <Box position="relative" w="32px" h="42px">
+            (i === (currentHistory.messages || []).length - 1 ? !isLoading : true) && <Box position="relative" w="32px" h="42px">
               <Image src={Ellipse} alt="Chat AI logo" w="full" h="full" objectFit="contain" />
             </Box>
           ) : (
             <Box w="32px"></Box>
           )}
           {e.role !== "user" ? <Box w={e.role !== "user" ? "calc(100% - 42px)" : "100%"} pt={e.role !== "user" ? "8px" : ""}>
-            {renderMessageContent(e,i)}
+            {(i === (currentHistory.messages || []).length - 1 ? !isLoading : true) && renderMessageContent(e,i)}
           </Box> : <Text>{e.content}</Text>}
         </Box>
       ))}

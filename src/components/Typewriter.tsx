@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Box } from '@chakra-ui/react'
-
+import { useUiStore } from "@/state/useUiStore";
 interface TypewriterProps {
   text: string;
   speed?: number;
@@ -15,7 +15,8 @@ export const Typewriter: React.FC<TypewriterProps> = ({
   onComplete 
 }) => {
   const [displayedText, setDisplayedText] = useState('');
-  const [currentIndex, setCurrentIndex] = useState(0)
+  // const [currentIndex, setCurrentIndex] = useState(0)
+  const isLoading = useUiStore((state) => state.isLoading);
 
   function formatContent(text:string) {
 
@@ -38,29 +39,28 @@ export const Typewriter: React.FC<TypewriterProps> = ({
     return formatted
   }
 
-  // useEffect(() => {
-  //   if(isHistory) {
-  //     setDisplayedText(text)
-  //     return
-  //   }
-  //   // setDisplayedText(''); // 重置文本
-    
-  //   let cI = 0;
-  //   console.log(text, currentIndex, '???text')
-  //   setCurrentIndex(currentIndex + 1)
-  //   const timer = setInterval(() => {
-  //     if (currentIndex < text.length) {
-  //       setDisplayedText(prev => (text || '').slice(0, cI));
-  //       cI++;
-  //       setCurrentIndex(cI)
-  //     } else {
-  //       clearInterval(timer);
-  //       onComplete?.();
-  //     }
-  //   }, speed);
+  useEffect(() => {
+    if(isHistory) {
+      setDisplayedText(text)
+      return
+    }
+    if(isLoading) return
+    // setDisplayedText(''); // 重置文本
+    let currentIndex = 0;
+    let currentText = ''
+    const timer = setInterval(() => {
+      if (currentIndex < text.length) {
+        currentText += (text[currentIndex] || '')
+        setDisplayedText(prev => currentText);
+        currentIndex++;
+      } else {
+        clearInterval(timer);
+        onComplete?.();
+      }
+    }, speed);
 
-  //   return () => clearInterval(timer);
-  // }, [text, speed]);
+    return () => clearInterval(timer);
+  }, [text, speed, isLoading]);
 
-  return <div dangerouslySetInnerHTML={{__html: formatContent(text)}}></div>;
+  return <div dangerouslySetInnerHTML={{__html: formatContent(displayedText)}}></div>;
 };

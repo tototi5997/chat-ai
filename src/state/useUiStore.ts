@@ -7,6 +7,7 @@ type UiState = {
   history: any;
   needScroll: boolean;
   currentId: string;
+  isLoading: boolean;
   toggleSidebar: () => void;
   setSidebarOpen: (open: boolean) => void;
   setIsNewChat: (flag: boolean) => void;
@@ -14,6 +15,7 @@ type UiState = {
   setHistory: (data:any) => void;
   setNeedScroll: (flag: boolean) => void;
   setCurrent: (id: string) => void;
+  setIsLoading: (flag: boolean) => void;
 };
 
 // 示例：使用 Zustand 管理简单的 UI 状态
@@ -25,6 +27,7 @@ export const useUiStore = create<UiState>((set) => ({
   history: {},
   needScroll: false,
   currentId: '',
+  isLoading: false,
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
   setSidebarOpen: (open) => set({ sidebarOpen: open }),
   setIsNewChat: (flag) => set({ isNewChat: flag }),
@@ -34,5 +37,6 @@ export const useUiStore = create<UiState>((set) => ({
     ...data
   } })),
   setNeedScroll: (flag) => set({ needScroll: flag }),
-  setCurrent: (id) => set({ currentId: id })
+  setCurrent: (id) => set({ currentId: id }),
+  setIsLoading: (flag) => set({ isLoading: flag }),
 }));
