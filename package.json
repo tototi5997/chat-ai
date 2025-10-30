@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy:test": "scp -r dist root@54.89.163.74:/home/www/chat"
   },
   "dependencies": {
     "@chakra-ui/react": "^3.27.0",
