@@ -1,5 +1,4 @@
-import { Button, CloseButton, Dialog, Portal, Flex, Image, Text } from "@chakra-ui/react"
-import IconDel from "@/assets/icon-del.png";
+import { Button, CloseButton, Dialog, Portal } from "@chakra-ui/react"
 import { useEffect, useState } from "react"
 
 export default function DelDialog (props: {visible: boolean, setVisible:(visible:boolean) => void, onSureDel: () => void}) {

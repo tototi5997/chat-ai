@@ -10,7 +10,7 @@ export interface StreamMessage {
   isHistory?: boolean
 }
 export function parseString(str:string) {
-  if((str.startsWith('\"') && str.endsWith('\"')) || (str.startsWith('{\"') && str.endsWith('\"}'))) {
+  if((str.startsWith('"') && str.endsWith('"')) || (str.startsWith('{"') && str.endsWith('"}'))) {
     return JSON.parse(str)
   }
   if(str === "null") {
@@ -32,7 +32,7 @@ export const useStreamChat = () => {
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const processStream = useCallback(async (url: string, options: RequestInit = {}, oldHistory: {}) => {
+  const processStream = useCallback(async (url: string, options: RequestInit = {}, oldHistory: object) => {
     setIsLoading(true);
     setError(null);
     

@@ -11,12 +11,16 @@ export default function Login() {
   const onUserName = (evt:ChangeEvent<HTMLInputElement>) => {
     const value = evt.target?.value
     setUsername(value)
-    value && setUsernameValid(false)
+    if (value) {
+      setUsernameValid(false)
+    }
   }
   const onPassword = (evt:ChangeEvent<HTMLInputElement>) => {
     const value = evt.target?.value
     setPassword(value)
-    value && setPasswordValid(false)
+    if (value) {
+      setPasswordValid(false)
+    }
   }
   // 登录
   const onLogin = () => {

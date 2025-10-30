@@ -3,8 +3,7 @@ import IconPaperclip from "@/assets/icon-paperclip.png";
 import IconGlobe from "@/assets/icon-globe.png";
 import IconGlobeSvg from "@/assets/icon-globe.svg";
 import IconArrowUp from "@/assets/icon-arrow-up.png";
-import IconStop from "@/assets/icon-stop.png";
-import { useState, type ChangeEvent, useCallback, useEffect } from "react";
+import { useState, type ChangeEvent, useCallback } from "react";
 import { useNewChat, useChatList } from "@/state";
 // import { fetchWithSSE } from '@/api/sse'
 import { useUiStore } from "@/state/useUiStore";
@@ -21,7 +20,7 @@ export function NewChat() {
   const isNewChat = useUiStore((state) => state.isNewChat);
   const setCurrentHistory = useUiStore((state) => state.setCurrentHistory);
   const setIsNewChat = useUiStore((state) => state.setIsNewChat);
-  const { processStream, stopStream } = useStreamChat();
+  const { processStream } = useStreamChat();
   // const [isLoading, setIsPending] = useState(false)
   const queryClient = useQueryClient();
   // 历史聊天记录列表

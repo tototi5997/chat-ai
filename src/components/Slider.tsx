@@ -1,10 +1,10 @@
-import { Button, VStack, HStack, Text, Box, Image, Flex, Popover, Portal, Dialog } from "@chakra-ui/react";
+import { Button, VStack, HStack, Text, Box, Image, Flex, Popover, Portal } from "@chakra-ui/react";
 import IconGrid from "@/assets/icon-grid.png";
 import IconSetting from "@/assets/icon-setting.png";
 import IconMore from "@/assets/icon-more.png";
 import IconEdit from "@/assets/icon-edit.png";
 import IconDel from "@/assets/icon-del.png";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import EditInput from "./EditInput";
 import DelDialog from "./DelDialog";
 import { type contentInterface } from '@/types/customInterface'

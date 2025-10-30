@@ -1,4 +1,4 @@
-import { Box, Center, Image, Text, VStack, Flex } from "@chakra-ui/react";
+import { Box, Image, Text, VStack, Flex } from "@chakra-ui/react";
 import Ellipse from "@/assets/ellipse.png";
 import { NewChat } from "./NewChat";
 import ChatContent from "./ChatContent";
