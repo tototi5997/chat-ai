@@ -62,7 +62,7 @@ export function fetchWithSSE(url:string, params = {}, onMessage: (func: any) => 
                     if (colonIndex < 0) return // 无效格式
 
                     const field = line.slice(0, colonIndex).trim()
-                    let value = line.slice(colonIndex + 1).trim()
+                    const value = line.slice(colonIndex + 1).trim()
 
                     // 4. 处理不同字段类型
                     switch (field.toLowerCase()) {

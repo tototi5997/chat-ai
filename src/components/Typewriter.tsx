@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Box } from '@chakra-ui/react'
 import { useUiStore } from "@/state/useUiStore";
 interface TypewriterProps {
   text: string;
@@ -51,7 +50,7 @@ export const Typewriter: React.FC<TypewriterProps> = ({
     const timer = setInterval(() => {
       if (currentIndex < text.length) {
         currentText += (text[currentIndex] || '')
-        setDisplayedText(prev => currentText);
+        setDisplayedText(currentText);
         currentIndex++;
       } else {
         clearInterval(timer);
