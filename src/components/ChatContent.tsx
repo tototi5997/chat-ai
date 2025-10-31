@@ -1,4 +1,4 @@
-import { Box, Image, Text, Link, Collapsible, Flex } from "@chakra-ui/react";
+import { Box, Image, Text, Collapsible, Flex } from "@chakra-ui/react";
 import Ellipse from "@/assets/ellipse.png";
 import { useUiStore } from "@/state/useUiStore";
 import { Typewriter } from './Typewriter.tsx';
@@ -6,6 +6,7 @@ import { baseUrl } from '../../config.ts'
 import { useEffect, useRef, useState } from "react";
 import { type StreamMessage } from '@/api/hook'
 import Arrow from "@/assets/arrow.svg";
+import axios from "axios";
 
 export default function ChatContent() {
   const currentHistory = useUiStore((state) => state.currentHistory);
@@ -56,6 +57,28 @@ export default function ChatContent() {
     })
   }
 
+  const onDownload = (toolContent:any) => {
+    axios({
+      method: 'get',
+      url: `${baseUrl}/download/${toolContent.function_result?.file_url}`,
+      responseType: 'blob'
+    }).then(res => {
+      if(res.status === 200) {
+        const blob = new Blob([res.data])
+        const downloadElement = document.createElement('a');
+        const href = window.URL.createObjectURL(blob);
+        downloadElement.href = href;
+        downloadElement.download = toolContent.function_result?.file_url;
+        document.body.appendChild(downloadElement);
+        downloadElement.click();
+        document.body.removeChild(downloadElement);
+        window.URL.revokeObjectURL(href);
+      } else {
+        // alert('下载失败')
+      }
+    })
+  }
+
   // 渲染消息内容
   const renderMessageContent = (message: StreamMessage,index:number) => {
     if (message.role === 'assistant') {
@@ -94,9 +117,9 @@ export default function ChatContent() {
           <Box className="message tool-message">
             <Box>工具调用: {toolContent.function_call}</Box> 
             {toolContent.function_result?.file_url ? (
-              <Box>文件:  
-                <Link href={`${baseUrl}/download/${toolContent.function_result?.file_url}`} color='#1188d6' title="点击下载"> {toolContent.function_result?.file_url}</Link>
-              </Box>
+              <Flex>文件:  
+                <Text cursor="pointer" onClick={() => onDownload(toolContent)} color='#1188d6' title="点击下载"> {toolContent.function_result?.file_url}</Text>
+              </Flex>
             ) : <></>}
           </Box>
         );

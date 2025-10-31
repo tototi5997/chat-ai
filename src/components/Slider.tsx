@@ -27,9 +27,10 @@ const Slider = () => {
   const [inputValue, setInputValue] = useState<string>('')
   const [visible, setVisible] = useState(false)
   const queryClient = useQueryClient();
-  // const currentHistory = useUiStore((state) => state.currentHistory);
+  const currentHistory = useUiStore((state) => state.currentHistory);
   const setCurrentHistory = useUiStore((state) => state.setCurrentHistory);
   const setIsNewChat = useUiStore((state) => state.setIsNewChat);
+  const setQuestion = useUiStore((state) => state.setQuestion);
   const history = useUiStore((state) => state.history);
   const setHistory = useUiStore((state) => state.setHistory);
   const currentId = useUiStore((state) => state.currentId);
@@ -48,6 +49,7 @@ const Slider = () => {
   const onNewChat = () => {
     setIsNewChat(true)
     setCurrent('')
+    setQuestion('')
     // 更新数据并触发组件重渲染
     setCurrentHistory({})
   }
@@ -55,6 +57,9 @@ const Slider = () => {
   const onHistoryClick = async (e:historyObj) => {
     setCurrent(e.id)
     setIsOpen(false)
+    if(e.id !== currentHistory.id) {
+      setQuestion('')
+    }
     if(!history[e.id]) {
       const res = await getChatInfo.mutateAsync(e.id)
       setCurrentHistory({
@@ -173,13 +178,13 @@ const Slider = () => {
             </Text>
           </HStack>
         </VStack>
-        <VStack w="100%" mt="30px">
+        <VStack w="100%" h="calc(700 * 100vh / 1080)" mt="30px">
           <HStack w="100%" pl="10px">
             <Text fontSize="14px" fontFamily="PingFang SC" color="#D9D1CB8A">
               最近聊天
             </Text>
           </HStack>
-          <Box w="100%" maxH="800px" overflow="auto" _scrollbar={{display: 'none'}}>
+          <Box w="100%" maxH="calc(100% - 30px)" overflow="auto" _scrollbar={{display: 'none'}}>
             {chatList.map((e:historyObj) => (
               <Flex key={e.id} w="100%" justify="space-between" alignItems="center" p="10px" cursor="pointer" borderRadius="8px" _hover={{backgroundColor: '#FFFFFF1A'}} backgroundColor={currentId === e.id ? '#FFFFFF1A' : ''} onClick={() => onHistoryClick(e)}>
                 {editData?.id === e.id ? <EditInput value={inputValue} onChange={(value) => inputChange(value, e)} /> :<Text fontSize="14px" fontFamily="PingFang SC" color="#FDFCFB">

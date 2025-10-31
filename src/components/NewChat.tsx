@@ -13,10 +13,12 @@ import { useQueryClient } from '@tanstack/react-query';
 
 export function NewChat() {
   const [isDeepThink, setIsDeepThink] = useState<boolean>(false); // 是否开启深度思考
-  const [question, setQuestion] = useState<string>(""); // 输入框数据
+  // const [question, setQuestion] = useState<string>(""); // 输入框数据
 
   const currentHistory = useUiStore((state) => state.currentHistory);
   const setCurrent = useUiStore((state) => state.setCurrent);
+  const question = useUiStore((state) => state.question);
+  const setQuestion = useUiStore((state) => state.setQuestion);
   const isLoading = useUiStore((state) => state.isLoading);
   const isNewChat = useUiStore((state) => state.isNewChat);
   const setCurrentHistory = useUiStore((state) => state.setCurrentHistory);
